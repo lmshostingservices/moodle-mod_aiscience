@@ -1,0 +1,916 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}[hidden]{display:none!important}</style></head><body><script type="application/json" id="labkit-marking">{"iv":"the tilt of the databot","dv":"the light reading","unit":"lux","idea":"the same light spreading over a bigger area","data":"phases","questions":[{"k":"claim","part":"claim","model":"The more the databot is tilted away from the light, the lower the light reading.","ideas":["tilt|angle|turn|away|sideways|slant","less|lower|drop|decrease|fall|dim|down|reduce|smaller|darker"],"wrong":["stays the same","stay the same","no change","doesn't change","does not change","goes up","gets brighter","increas"],"q":"What happens to the light reading as the databot is tilted away from facing the light?"},{"k":"ev1","part":"evidence","model":"About 7,600 lux when it lay flat.","numbers":1,"match":["flat"],"q":"What was the light reading when the databot lay flat?"},{"k":"ev2","part":"evidence","model":"About 5,400 lux, about 71% of the flat reading.","numbers":1,"match":["half"],"ideas":["percent|%|third|quarter|less|lower|drop|fell|of flat"],"q":"What happened to the reading when you tilted it halfway?"},{"k":"ev3","part":"evidence","model":"About 2,000 lux, about 26% of the flat reading.","numbers":1,"match":["side"],"ideas":["percent|%|quarter|much less|lower|drop|fell|of flat|dark"],"q":"What happened when you tilted it almost sideways?"},{"k":"pred","part":"other","model":"No. I predicted it would drop a little at each tilt, but it dropped a little at first and then a lot.","ideas":["predict|thought|expect|guess|said","right|wrong|correct|match|differ|surprise|yes|no|not"],"q":"Was your prediction right?"},{"k":"why","part":"reasoning","model":"When the sensor tilts, the same beam of light spreads over a bigger area, so each part of the sensor gets less light.","ideas":["spread|area|larger|bigger|wider|stretch","less|fewer|each|per|weaker|not as much"],"because":true,"q":"Why does tilting the sensor change the reading?"},{"k":"season","part":"reasoning","model":"In winter the Sun is lower in the sky, so its light hits the ground at a low angle and is spread over a bigger area, so it heats less.","ideas":["winter|summer|season","angle|low|lower|slant|tilt","spread|area|less energy|less heat|weaker|cold|less light"],"because":true,"wrong":["closer to the sun","nearer to the sun","nearer the sun","further from the sun","further away from the sun","farther from the sun","sun is further away","sun is closer","sun is further","earth is closer"],"q":"How does this explain the seasons on Earth?"},{"k":"error","part":"other","model":"Holding the databot still at the right angle was hard, and shadows or room light could change the reading.","ideas":["still|steady|shake|hand|angle|measure|shadow|room|accurate|exact"],"q":"What could have made your measurements less accurate?"},{"k":"next","part":"other","model":"I would test whether the colour of the light or the distance from the lamp changes the reading.","ideas":["test|try|investigate|measure|what if|colour|color|distance|different"],"q":"What would you test next?"}]}</script><title>Angle of Light</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one centred lab-bench column; stepper on top, each step is a "station" with a live instrument panel */
+:root{
+  --bg:#f6f8fb; --panel:#ffffff; --ink:#14213a; --muted:#5b6780; --line:#dbe2ec;
+  --sun:#e8890c; --sun-ink:#9a5200; --sun-soft:#fdebd0; --teal:#14897c; --teal-soft:#d6efeb;
+  --violet:#7a3fc4; --violet-soft:#ece2f8; --go:#1f5fd6; --err:#b3361e;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif;
+  --f-data:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1424; --panel:#161e33; --ink:#e8edf7; --muted:#9aa6bf; --line:#2a3550;
+  --sun:#f5a13a; --sun-ink:#f5a13a; --sun-soft:#3a2a12; --teal:#3cc1b0; --teal-soft:#123532;
+  --violet:#b48af0; --violet-soft:#2b1f44; --go:#6c9cff; --err:#ff8a70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1424; --panel:#161e33; --ink:#e8edf7; --muted:#9aa6bf; --line:#2a3550;
+  --sun:#f5a13a; --sun-ink:#f5a13a; --sun-soft:#3a2a12; --teal:#3cc1b0; --teal-soft:#123532;
+  --violet:#b48af0; --violet-soft:#2b1f44; --go:#6c9cff; --err:#ff8a70; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:920px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:3px solid var(--sun)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{font-family:var(--f-display);font-stretch:80%;font-weight:900;font-size:28px;letter-spacing:-.01em;margin:0;text-transform:uppercase}
+.brand svg{flex:none}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{font:700 15px var(--f-body);border-radius:10px;padding:10px 16px;border:2px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--go);outline-offset:2px}
+button.small{padding:6px 12px;font-size:13px;border-width:1.5px;border-color:var(--line)}
+button.primary{background:var(--go);border-color:var(--go);color:#fff}
+button.sun{background:var(--sun);border-color:var(--sun);color:#1b1205}
+button.teal{background:var(--teal);border-color:var(--teal);color:#fff}
+button.violet{background:var(--violet);border-color:var(--violet);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+.stepper{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:16px 0 22px}
+.stepper button{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:6px;font:700 13px var(--f-body);color:var(--muted)}
+.stepper button::before{content:"";height:5px;border-radius:3px;background:var(--line)}
+.stepper button.done::before{background:var(--teal)}
+.stepper button.done{color:var(--ink)}
+.stepper button.current::before{background:var(--go)}
+.stepper button.current{color:var(--go)}
+.stepper button:disabled{cursor:default}
+.stepper button:focus-visible{outline:3px solid var(--go);outline-offset:3px;border-radius:4px}
+.eyebrow{font:700 12px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:var(--sun-ink);margin:0 0 4px}
+h2{font-family:var(--f-display);font-stretch:85%;font-weight:800;font-size:clamp(26px,4vw,36px);line-height:1.1;margin:0 0 10px;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:700;font-size:19px;margin:0 0 8px}
+p{margin:0 0 12px;max-width:65ch}
+.muted{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1.2fr;gap:20px;align-items:start}
+.grid2>*{min-width:0}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}.stepper button{font-size:0}.stepper button.current{font-size:12px}}
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:16px}
+.scene{width:100%;aspect-ratio:480/300;height:auto;display:block;border-radius:12px;max-width:100%}
+.ctrl{display:grid;gap:4px;margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.ctrl output{font-family:var(--f-data);color:var(--sun)}
+input[type=range]{width:100%;accent-color:var(--go);height:28px}
+.readout{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.readout .big{font:800 54px/1 var(--f-display);font-stretch:85%}
+.readout .unit{font:700 20px var(--f-data);color:var(--sun)}
+.meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}
+.meter i{display:block;height:100%;background:var(--sun);transition:width .2s}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.choices{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin:12px 0}
+@media (max-width:560px){.choices{grid-template-columns:1fr}}
+.choice{all:unset;cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center}
+.choice:focus-visible{outline:3px solid var(--go)}
+.choice[aria-pressed=true]{border-color:var(--go);background:color-mix(in srgb,var(--go) 9%,var(--panel))}
+.choice b{display:block}
+.choice small{color:var(--muted)}
+.choice svg{width:72px;height:44px}
+textarea{width:100%;min-height:96px;font:16px/1.5 var(--f-body);color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:10px}
+ol.how{padding-left:22px;margin:0 0 14px}
+ol.how li{margin-bottom:6px;font-weight:700}
+ol.how li span{font-weight:400;color:var(--muted)}
+.status{display:flex;align-items:center;gap:8px;font-weight:700;margin:6px 0 10px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dot.on{background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft)}
+.msg{font-weight:700;color:var(--err);min-height:1.5em;margin:6px 0}
+.rec-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.chart{width:100%;height:auto;display:block}
+.chart-wrap{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:10px 8px 4px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:8px 4px}
+.legend span::before{content:"";display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;background:var(--sun)}
+.legend .lh::before{background:repeating-linear-gradient(90deg,var(--teal) 0 5px,transparent 5px 8px)}
+.legend .ls::before{background:repeating-linear-gradient(90deg,var(--violet) 0 5px,transparent 5px 8px)}
+.scrub-text{font-weight:700;font-variant-numeric:tabular-nums}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+@media (max-width:560px){.phases{grid-template-columns:1fr}}
+.phase{border-radius:12px;padding:12px;border:1.5px solid var(--line);background:var(--panel)}
+.phase .lbl{font:700 12px var(--f-data);letter-spacing:.08em;text-transform:uppercase}
+.phase .v{font:800 30px var(--f-display);font-stretch:85%;font-variant-numeric:tabular-nums}
+.phase .pct{font-family:var(--f-data);font-size:13px;color:var(--muted)}
+.phase.flat .lbl{color:var(--sun)} .phase.half .lbl{color:var(--teal)} .phase.side .lbl{color:var(--violet)}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px;width:100%}
+th,td{padding:4px 10px;border-bottom:1px solid var(--line);text-align:right}
+th{font-family:var(--f-data);font-size:12px;color:var(--muted)}
+.tbl{max-height:260px;overflow:auto;margin-top:8px}
+details summary{cursor:pointer;color:var(--go);font-weight:700;text-decoration:underline}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.pills button{width:40px;height:40px;padding:0;border-radius:50%;border:2px solid var(--teal);color:var(--teal);background:var(--panel);font-family:var(--f-data)}
+.pills button.filled{background:var(--teal-soft)}
+.pills button.cur{background:var(--go);border-color:var(--go);color:#fff}
+.cer{font:700 12px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:var(--sun);margin:0}
+.hint{background:var(--sun-soft);border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0 12px;max-width:none}
+.report-out{white-space:pre-wrap;font-size:15px;line-height:1.6}
+.report-out h4{font-family:var(--f-display);margin:14px 0 4px}
+.tag{display:inline-block;font:700 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--teal-soft);color:var(--teal)}
+.tag.sim{background:var(--sun-soft);color:var(--sun)}
+.ray{stroke-dasharray:6 7;animation:flow 1s linear infinite}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pl 1.1s ease-out infinite}@keyframes pl{from{transform:scale(.6);opacity:1}to{transform:scale(1.8);opacity:0}}
+@keyframes flow{to{stroke-dashoffset:-13}}
+@media (prefers-reduced-motion:reduce){.ray,.pulse{animation:none}.meter i{transition:none}}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---- learning: checkpoints, findings, challenge ---- */
+.checkpoint{border:2px solid var(--sun);background:color-mix(in srgb,var(--sun) 8%,var(--panel));border-radius:14px;padding:14px;margin:12px 0;animation:rise .4s var(--ease) both}
+.checkpoint h3{display:flex;gap:8px;align-items:center;margin:0 0 4px}
+.checkpoint .tagline{font:700 11px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:var(--sun)}
+.findings{width:100%;border-collapse:separate;border-spacing:0;margin-top:8px;font-size:15px}
+.findings th{font:700 11px var(--f-data);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px;border-bottom:1.5px solid var(--line)}
+.findings td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.findings input{width:100%;font:15px var(--f-body);padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.findings input.num{font-family:var(--f-data);max-width:120px}
+.findings input:focus{border-color:var(--go);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--go) 16%,transparent)}
+.challenge{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}
+@media (max-width:640px){.challenge{grid-template-columns:1fr}}
+.target{position:relative;height:16px;border-radius:8px;background:var(--line);overflow:hidden;margin:8px 0}
+.target i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,color-mix(in srgb,var(--sun) 70%,#fff),var(--sun));transition:width .2s}
+.target b{position:absolute;top:-3px;bottom:-3px;width:3px;left:50%;background:var(--ink);border-radius:2px}
+.win{color:var(--teal);font-weight:800;font-family:var(--f-display);font-size:20px}
+/* ---- voiceover ---- */
+button.vo{display:inline-flex;align-items:center;gap:6px}
+button.vo[aria-pressed=true]{background:var(--go);border-color:var(--go);color:#fff}
+.listen{display:inline-flex;align-items:center;gap:6px;font:700 12px var(--f-body);padding:5px 11px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--go);margin:0 0 8px;cursor:pointer}
+.speaking{background:color-mix(in srgb,var(--sun) 22%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--sun) 22%,transparent);border-radius:6px;transition:background-color .25s,box-shadow .25s}
+/* ---- polish layer: depth, motion, type ---- */
+:root{--sh1:0 1px 2px rgba(20,33,58,.05),0 3px 8px -2px rgba(20,33,58,.07);--sh2:0 2px 4px rgba(20,33,58,.05),0 18px 36px -12px rgba(20,33,58,.24);--hl:rgba(255,255,255,.75);--ease:cubic-bezier(.2,.8,.2,1)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sh1:0 1px 2px rgba(0,0,0,.4),0 4px 10px -2px rgba(0,0,0,.35);--sh2:0 2px 6px rgba(0,0,0,.45),0 22px 40px -12px rgba(0,0,0,.6);--hl:rgba(255,255,255,.05)}}
+:root[data-theme="dark"]{--sh1:0 1px 2px rgba(0,0,0,.4),0 4px 10px -2px rgba(0,0,0,.35);--sh2:0 2px 6px rgba(0,0,0,.45),0 22px 40px -12px rgba(0,0,0,.6);--hl:rgba(255,255,255,.05)}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:"kern","liga"}
+h2{letter-spacing:-.02em;line-height:1.04}
+p{text-wrap:pretty}
+.eyebrow{display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:16px;height:2px;border-radius:2px;background:currentColor}
+.panel,.chart-wrap{background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 95%,var(--line)));border-color:color-mix(in srgb,var(--line) 70%,transparent);box-shadow:var(--sh1),inset 0 1px 0 var(--hl)}
+.choice,.phase{box-shadow:var(--sh1);transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s,background-color .2s}
+.choice:hover,.phase:hover{transform:translateY(-3px);box-shadow:var(--sh2)}
+.choice[aria-pressed=true]{box-shadow:0 0 0 4px color-mix(in srgb,var(--go) 18%,transparent),var(--sh2)}
+.choice svg path{stroke-dasharray:200;stroke-dashoffset:0;transition:stroke-dashoffset .6s var(--ease)}
+.choice:hover svg path{animation:draw .8s var(--ease)}
+@keyframes draw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+.phase .v{letter-spacing:-.02em}
+.readout .big{letter-spacing:-.03em}
+button{transition:transform .18s var(--ease),box-shadow .18s var(--ease),background-color .2s,border-color .2s,color .2s}
+button:not(:disabled):hover{transform:translateY(-1px);box-shadow:var(--sh1)}
+button:not(:disabled):active{transform:translateY(0) scale(.97);box-shadow:none}
+button.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--go) 86%,#fff),var(--go));box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 6px 14px -6px color-mix(in srgb,var(--go) 70%,transparent)}
+button.sun{background:linear-gradient(180deg,color-mix(in srgb,var(--sun) 84%,#fff),var(--sun));box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 6px 14px -6px color-mix(in srgb,var(--sun) 75%,transparent)}
+button.teal{background:linear-gradient(180deg,color-mix(in srgb,var(--teal) 86%,#fff),var(--teal))}
+button.violet{background:linear-gradient(180deg,color-mix(in srgb,var(--violet) 86%,#fff),var(--violet))}
+.stepper button::before{transition:background-color .4s var(--ease),transform .4s var(--ease);transform-origin:left}
+.stepper button.current::before{box-shadow:0 0 0 3px color-mix(in srgb,var(--go) 18%,transparent)}
+.stepper button:not(:disabled):hover{color:var(--ink)}
+.pills button{transition:transform .2s var(--ease),background-color .2s,box-shadow .2s}
+.pills button:hover{transform:scale(1.08)}
+.pills button.cur{box-shadow:0 0 0 4px color-mix(in srgb,var(--go) 22%,transparent)}
+textarea{transition:border-color .2s,box-shadow .2s}
+textarea:focus{border-color:var(--go);box-shadow:0 0 0 4px color-mix(in srgb,var(--go) 16%,transparent);outline:none}
+.meter{box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+.meter i{background:linear-gradient(90deg,color-mix(in srgb,var(--sun) 70%,#fff),var(--sun));transition:width .35s var(--ease)}
+.hint{border:1px solid color-mix(in srgb,var(--sun) 30%,transparent)}
+section[data-step]:not([hidden]){animation:rise .5s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.scene{box-shadow:0 20px 40px -18px rgba(7,12,29,.55)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+/* Prediction check */
+.pc{margin:6px 0 16px;border-width:2px}
+.pc.ok{border-color:var(--teal);background:linear-gradient(180deg,var(--teal-soft),var(--panel) 70%)}
+.pc.no{border-color:var(--violet);background:linear-gradient(180deg,var(--violet-soft),var(--panel) 70%)}
+.pc h3{margin:2px 0 12px;font-size:20px;text-wrap:balance}
+.pc-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.pc figure{margin:0;flex:1 1 180px;min-width:0;display:grid;gap:4px;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.pc figcaption{font:700 11px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pc svg{width:100%;max-width:150px;height:auto}
+.pc-pred{fill:none;stroke:var(--sun);stroke-width:3;stroke-linecap:round;stroke-dasharray:5 4}
+.pc-data{fill:none;stroke:var(--go);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.pc-vs{font:800 30px var(--f-display,inherit);color:var(--muted)}
+.pc.ok .pc-vs{color:var(--teal)}.pc.no .pc-vs{color:var(--violet)}
+.pc-msg{margin:12px 0 8px}
+.pc-q{display:block;font-weight:700;margin:4px 0 6px}
+.pc textarea{width:100%;box-sizing:border-box}
+.report-out .cer-h{font:700 12px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:var(--sun);margin:18px 0 0}
+/* Report check */
+.rc{border-width:2px;border-color:var(--go)}
+.rc h3{margin:2px 0 10px;outline:none}
+.rc-list{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}
+.rc-list li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--panel);border:1.5px solid var(--line)}
+.rc-list li.ok{background:var(--teal-soft);border-color:transparent}
+.rc-list li.todo{background:var(--sun-soft);border-color:transparent}
+.rc-i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--panel)}
+.rc-list li.ok .rc-i{color:var(--teal)}
+.rc-list li.todo .rc-i{color:var(--sun-ink)}
+.rc-list button{margin-left:4px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="var(--sun-soft)"/><circle cx="20" cy="13" r="5" fill="var(--sun)"/><path d="M8 30 L32 24" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M14 18v9M20 18v8M26 18v6" stroke="var(--sun)" stroke-width="2" stroke-dasharray="2 2"/></svg>
+      <h1>Angle of Light</h1>
+    </div>
+    <div class="top-actions">
+      <span id="modeTag" class="tag" hidden></span>
+      <button class="small vo" id="btnVO" aria-pressed="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="btnVOL">Read aloud</span></button>
+      <button class="small" id="btnAbout">About the sensor</button>
+      <button class="small" id="btnRestart">Start over</button>
+    </div>
+  </header>
+
+  <nav class="stepper" id="stepper" aria-label="Experiment steps"></nav>
+
+  <!-- 1 GET STARTED -->
+  <section data-step="0" data-stage="1">
+    <div class="grid2">
+      <div>
+        <p class="eyebrow">Step 1 · Get started</p>
+        <h2>Why is summer sunlight stronger than winter sunlight?</h2>
+        <p>The Sun doesn't get much closer to us in summer. What changes is the <b>angle</b> the light arrives at. In this experiment you'll tilt a databot's light sensor away from a light and measure how the brightness changes, in <b>lux</b>.</p>
+        <p class="muted">Try it first. Grab the databot and tilt it, or press Play. Watch how much of the beam still lands on the sensor.</p>
+        <div class="panel" id="aboutBox" hidden>
+          <h3>About the sensor</h3>
+          <p>The databot has an ambient light sensor on its top face. It reports illuminance in <b>lux</b>: how much light falls on each square metre of surface. A sunny day outside is about 30,000–100,000 lux. A bright desk lamp up close is a few thousand. A dim room is around 100.</p>
+          <p style="margin:0">Lux depends on the surface, not just the light. Tilt the surface and the same light spreads over more area, so each square metre gets less.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <canvas class="scene" id="scene0" role="img" aria-label="Light from a lamp falling on a databot. Drag the databot or use the slider to tilt it."></canvas>
+        <div class="readout" aria-live="polite"><span class="big" id="lux0">0</span><span class="unit">lux</span></div>
+        <div class="meter"><i id="meter0"></i></div>
+        <div class="ctrl"><label for="ang0">Sensor tilt <output id="ang0o">0°</output></label><input type="range" id="ang0" min="0" max="90" value="0"></div>
+        <div class="rec-row" style="margin:4px 0 0"><button class="small" id="btnSweep">Play: tilt slowly</button><span class="muted" style="font-size:13px;align-self:center">Watch the rays as the databot turns.</span></div>
+        <div class="ctrl"><label for="src0">Light strength <output id="src0o">100%</output></label><input type="range" id="src0" min="10" max="100" value="100"></div>
+      </div>
+    </div>
+    <div class="nav"><span></span><button class="primary" data-go="1">Next: Predict</button></div>
+  </section>
+
+  <!-- 2 PREDICT -->
+  <section data-step="1" data-stage="2" hidden>
+    <p class="eyebrow">Step 2 · Predict</p>
+    <h2>What will happen to the light reading as you tilt the databot away from the light?</h2>
+    <p class="muted">Pick the graph shape you expect. There's no wrong answer yet; you'll test it.</p>
+    <div class="choices" id="choices"></div>
+    <label for="predWhy"><b>Why do you think that?</b></label>
+    <textarea id="predWhy" placeholder="I think the reading will… because…"></textarea>
+    <div class="nav"><button data-go="0">Back</button><button class="primary" data-go="2" id="toConnect" disabled>Next: Connect</button></div>
+  </section>
+
+  <!-- 3 CONNECT -->
+  <section data-step="2" data-stage="3" hidden>
+    <div class="grid2">
+      <div>
+        <p class="eyebrow">Step 3 · Connect</p>
+        <h2>Connect your databot</h2>
+        <ol class="how">
+          <li>Turn the databot on. <span>The light ring should glow.</span></li>
+          <li>Use Chrome or Edge on a laptop or Chromebook. <span>Bluetooth needs these browsers.</span></li>
+          <li>Press Connect databot and pick it from the list. <span>Its name starts with DB_.</span></li>
+        </ol>
+        <div class="status"><span class="dot" id="dot"></span><span id="connText">Not connected</span></div>
+        <div class="rec-row">
+          <button class="primary" id="btnBle">Connect databot</button>
+          <button id="btnSim">Use practice sensor</button>
+          <button id="btnDisc" hidden>Disconnect</button>
+        </div>
+        <p class="msg" id="connMsg" role="alert"></p>
+        <p class="muted" style="font-size:14px">No databot today? The practice sensor behaves like a real one, including small flickers in the reading. Your teacher may ask you to use the real device for your final report.</p>
+      </div>
+      <div class="panel">
+        <h3>Live reading</h3>
+        <div class="readout"><span class="big" id="lux2">—</span><span class="unit">lux</span></div>
+        <p class="muted" style="margin-top:10px">Cover the sensor with your hand. The number should drop. That tells you it's working.</p>
+      </div>
+    </div>
+    <div class="nav"><button data-go="1">Back</button><button class="primary" data-go="3" id="toCollect" disabled>Next: Collect</button></div>
+  </section>
+
+  <!-- 4 COLLECT -->
+  <section data-step="3" data-stage="4" hidden>
+    <p class="eyebrow">Step 4 · Collect</p>
+    <h2>Measure the light at three angles</h2>
+    <ol class="how">
+      <li>Lay the databot flat, facing the light. Press Start recording.</li>
+      <li>Hold it still for about 15 seconds. Then tilt it halfway (about 45°) and press Tilted halfway.</li>
+      <li>Hold it still for about 15 seconds. Then tilt it almost sideways (about 75°) and press Almost sideways.</li>
+      <li>Hold it for about 15 more seconds, then press Stop recording.</li>
+    </ol>
+    <p class="muted" style="font-size:14px">Or press <b>Autoplay experiment</b> to watch the practice databot do all of this by itself while you take notes.</p>
+    <div class="grid2">
+      <div class="panel">
+        <div class="readout"><span class="big" id="lux3">—</span><span class="unit">lux</span></div>
+        <div class="status"><span class="dot" id="dot3"></span><span id="connText3"></span></div>
+        <div class="rec-row">
+          <button class="sun" id="btnRec">Start recording</button>
+          <button class="teal" id="btnHalf" disabled>Tilted halfway</button>
+          <button class="violet" id="btnSide" disabled>Almost sideways</button>
+        </div>
+        <div class="rec-row autoplay" id="autoRow">
+          <button id="btnAuto" class="primary">Autoplay experiment</button>
+          <label class="muted" for="autoSpeed" style="font-size:14px;align-self:center">Speed</label>
+          <select id="autoSpeed" style="font:700 14px var(--f-body);border-radius:8px;padding:6px"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select>
+        </div>
+        <div class="scrub-text muted" id="recInfo">Ready to record. Up to 60 seconds.</div>
+        <p class="msg" id="recMsg" role="alert"></p>
+        <div id="cpHolder"></div>
+      </div>
+      <div class="panel" id="simPanel">
+        <canvas class="scene" id="scene3" role="img" aria-label="Practice databot. Drag it or use the slider to tilt it."></canvas>
+        <div class="ctrl"><label for="ang3">Tilt the practice databot <output id="ang3o">0°</output></label><input type="range" id="ang3" min="0" max="90" value="0"></div>
+        <div class="ctrl"><label for="src3">Light strength <output id="src3o">100%</output></label><input type="range" id="src3" min="10" max="100" value="100"></div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="margin-top:16px"><svg class="chart" id="chart3" viewBox="0 0 760 330"></svg></div>
+    <div class="legend"><span>Light reading</span><span class="lh">Halfway</span><span class="ls">Almost sideways</span></div>
+    <div class="panel" style="margin-top:16px">
+      <h3>My findings</h3>
+      <p class="muted" style="font-size:14px;margin-bottom:4px">Fill in a row for each angle. Readings fill in from your graph; if you measured with a real light meter, type your own numbers.</p>
+      <div style="overflow-x:auto"><table class="findings" id="findings"><thead><tr><th>Angle</th><th>Reading (lux)</th><th>What I noticed</th></tr></thead><tbody>
+        <tr><td><b>Flat, 0°</b></td><td><input class="num" id="f_flat" inputmode="decimal" aria-label="Flat reading in lux"></td><td><input id="n_flat" aria-label="What I noticed when flat" placeholder="I noticed…"></td></tr>
+        <tr><td><b>Halfway, ~45°</b></td><td><input class="num" id="f_half" inputmode="decimal" aria-label="Halfway reading in lux"></td><td><input id="n_half" aria-label="What I noticed at halfway" placeholder="I noticed…"></td></tr>
+        <tr><td><b>Almost sideways, ~75°</b></td><td><input class="num" id="f_side" inputmode="decimal" aria-label="Almost sideways reading in lux"></td><td><input id="n_side" aria-label="What I noticed almost sideways" placeholder="I noticed…"></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="nav"><button data-go="2">Back</button><button class="primary" data-go="4" id="toAnalyze" disabled>Next: Analyze</button></div>
+  </section>
+
+  <!-- 5 ANALYZE -->
+  <section data-step="4" data-stage="5" hidden>
+    <p class="eyebrow">Step 5 · Analyze</p>
+    <h2>What does your graph show?</h2>
+    <p class="muted" id="sampleNote" hidden>You're looking at a sample run. Record your own data in Collect to replace it.</p>
+    <div class="chart-wrap"><svg class="chart" id="chart4" viewBox="0 0 760 330"></svg></div>
+    <div class="ctrl"><label for="scrub" class="sr">Move along the graph</label><input type="range" id="scrub" min="0" max="0" value="0"></div>
+    <p class="scrub-text"><span id="scrubText">Drag the slider to read any point.</span> &nbsp;<details style="display:inline"><summary>Show my data table</summary><div class="tbl"><table id="tbl"></table></div></details></p>
+    <div class="phases" id="phases"></div>
+    <div class="panel pc" id="predCheck" hidden></div>
+    <div class="panel" style="margin-bottom:16px">
+      <p class="eyebrow">Challenge</p>
+      <h3>Find the angle that halves the light</h3>
+      <p class="muted" style="font-size:14px">Guess first, then tilt the practice databot until the reading is exactly half the flat reading.</p>
+      <div class="challenge">
+        <div>
+          <label for="chGuess"><b>My guess</b></label>
+          <div class="rec-row" style="margin:6px 0 12px"><input type="number" id="chGuess" min="0" max="90" placeholder="°" style="width:90px;font:700 18px var(--f-data);padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)"><span class="muted">degrees</span></div>
+          <div class="ctrl"><label for="chAng">Tilt <output id="chAngO">0°</output></label><input type="range" id="chAng" min="0" max="90" value="0"></div>
+        </div>
+        <div>
+          <div class="readout"><span class="big" id="chLux">7,640</span><span class="unit">lux</span></div>
+          <div class="target" aria-hidden="true"><i id="chBar" style="width:100%"></i><b></b></div>
+          <p class="muted" style="font-size:13px;margin:0">The black line marks half the flat reading.</p>
+          <p class="win" id="chWin" aria-live="polite"></p>
+        </div>
+      </div>
+      <div id="chWhy" hidden>
+        <label for="chWhyT"><b>Why is it 60° and not 45°?</b> <span class="muted">Think about how much of the beam the sensor still catches.</span></label>
+        <textarea id="chWhyT" rows="2" placeholder="I think it's 60° because…"></textarea>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Measured vs. the cosine rule</h3>
+      <p class="muted" style="font-size:14px">Scientists predict that light on a tilted surface falls with the cosine of the tilt angle: at 45° about 71% of the flat reading, at 75° about 26%. How close did you get?</p>
+      <svg class="chart" id="compare" viewBox="0 0 760 170"></svg>
+    </div>
+    <div class="nav"><button data-go="3">Back</button><button class="primary" data-go="5">Next: Report</button></div>
+  </section>
+
+  <!-- 6 REPORT -->
+  <section data-step="5" data-stage="6" hidden>
+    <p class="eyebrow">Step 6 · Report</p>
+    <h2>Explain your results</h2>
+    <div class="pills" id="pills"></div>
+    <div class="panel" id="promptBox">
+      <p class="cer" id="pTag"></p>
+      <h3 id="pQ"></h3>
+      <p class="muted" id="pHelp"></p>
+      <p class="hint" id="pHint" hidden></p>
+      <label for="pAns" class="sr">Your answer</label>
+      <textarea id="pAns" rows="4"></textarea>
+      <div class="rec-row" style="margin:8px 0 0"><button class="small" id="pSpeak" type="button">Speak my answer</button><span class="muted" id="pSpeakMsg" style="font-size:13px;align-self:center"></span></div>
+      <div class="nav" style="margin-top:12px"><button id="pPrev">Previous</button><button class="primary" id="pNext">Next question</button></div>
+    </div>
+    <div class="panel rc" id="checkBox" hidden></div>
+    <div class="panel" id="final" hidden>
+      <h3>My Angle of Light report</h3>
+      <div class="report-out" id="reportOut"></div>
+      <div class="rec-row"><button class="primary" id="btnCopy">Copy report</button><button id="btnEdit">Edit answers</button></div>
+      <p class="muted" id="copyMsg" aria-live="polite"></p>
+    </div>
+    <div class="nav"><button data-go="4">Back</button><span></span></div>
+  </section>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const $=id=>document.getElementById(id);
+const STEPS=["Get started","Predict","Connect","Collect","Analyze","Report"];
+const MAXLUX=7600, AMBIENT=40, DUR=60, DT=0.5;
+const S={step:0,maxStep:0,prediction:null,mode:null,device:null,live:null,
+  rec:false,t0:0,data:[],half:null,side:null,sample:false,
+  simAngle:0,simTarget:0,simSrc:1,answers:{},pIdx:0};
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const saved=store.get("aol-state"); if(saved){Object.assign(S.answers,saved.answers||{});S.prediction=saved.prediction||null;}
+function persist(){store.set("aol-state",{answers:S.answers,prediction:S.prediction,why:$("predWhy").value})}
+if(saved&&saved.why)$("predWhy").value=saved.why;
+
+/* ---------- stepper ---------- */
+function renderStepper(){
+  const el=$("stepper");el.innerHTML="";
+  STEPS.forEach((n,i)=>{const b=document.createElement("button");b.textContent=(i+1)+". "+n;
+    b.className=i===S.step?"current":(i<=S.maxStep?"done":"");b.disabled=i>S.maxStep;
+    if(i===S.step)b.setAttribute("aria-current","step");b.onclick=()=>go(i);el.appendChild(b)});
+}
+function go(i){
+  if(i>S.maxStep)S.maxStep=i;S.step=i;
+  document.querySelectorAll("section[data-step]").forEach(s=>s.hidden=+s.dataset.step!==i);
+  renderStepper();window.scrollTo({top:0,behavior:"smooth"});
+  const h2=document.querySelector('section[data-step="'+i+'"] h2');if(h2&&window.__aisxBooted){h2.setAttribute("tabindex","-1");h2.style.outline="none";h2.focus({preventScroll:true})};
+  if(i===3)drawLiveChart(); if(i===4)renderAnalyze(); if(i===5)renderPrompt();
+  if(window.LabKit)LabKit.progress({stage:i+1,name:STEPS[i],readings:S.sample?0:S.data.length});
+  if(typeof VO!=="undefined"){stopVO();if(VO.on)setTimeout(()=>readStage(i),450)}
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+$("btnAbout").onclick=()=>{go(0);$("aboutBox").hidden=!$("aboutBox").hidden};
+$("btnRestart").onclick=()=>{stopRec();S.data=[];S.half=S.side=null;S.sample=false;S.answers={};S.prediction=null;$("predWhy").value="";persist();S.maxStep=0;renderChoices();go(0)};
+
+/* ---------- physics ---------- */
+const luxAt=(deg,src)=>MAXLUX*src*Math.max(0,Math.cos(deg*Math.PI/180))+AMBIENT;
+
+/* ---------- scene: canvas light chamber ---------- */
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+const PX=240,PY=226,HALF=72,BEAM0=164,BEAM1=316,BENCH=268;
+const CITIES=[[1,"Singapore"],[14,"Bangkok"],[32,"Perth"],[42,"Melbourne"],[52,"London"],[64,"Reykjavík"],[78,"Svalbard"],[90,"the North Pole"]];
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function mix(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t))}
+class Scene{
+  constructor(cv,o){
+    this.cv=cv;this.o=o;this.c=cv.getContext("2d");this.ph=[];this.sp=[];this.last=performance.now();this.hint=true;this.drag=false;this.acc=0;this.ia=0;
+    this.reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.fit=()=>{const r=cv.getBoundingClientRect();if(!r.width)return;const d=Math.min(2,window.devicePixelRatio||1);
+      cv.width=Math.round(r.width*d);cv.height=Math.round(r.width*300/480*d);this.k=cv.width/480};
+    this.fit();try{new ResizeObserver(this.fit).observe(cv)}catch(e){addEventListener("resize",this.fit)}
+    const pt=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*480,y:(e.clientY-r.top)/r.height*300}};
+    const set=e=>{const p=pt(e);const a=Math.atan2(PY-p.y,Math.max(1,p.x-PX))*180/Math.PI;this.o.setAngle(Math.round(Math.max(0,Math.min(90,a))))};
+    cv.addEventListener("pointerdown",e=>{const p=pt(e);if(Math.hypot(p.x-PX,p.y-PY)>140)return;this.drag=true;this.hint=false;cv.setPointerCapture(e.pointerId);cv.style.cursor="grabbing";set(e)});
+    cv.addEventListener("pointermove",e=>{if(this.drag)set(e)});
+    const up=()=>{this.drag=false;cv.style.cursor="grab"};cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+    cv.style.touchAction="none";cv.style.cursor="grab";
+    const loop=t=>{try{this.frame(t)}catch(e){}requestAnimationFrame(loop)};requestAnimationFrame(loop);
+  }
+  frame(t){
+    const cv=this.cv;if(!cv.offsetParent)return;if(!this.k)this.fit();if(!this.k)return;
+    const dt=Math.min(.05,(t-this.last)/1000);this.last=t;
+    const a=this.o.angle(),src=this.o.src(),th=a*Math.PI/180,dx=HALF*Math.cos(th),tn=Math.tan(th),c=this.c;
+    const caught=Math.max(0,Math.cos(th)),I=caught*src;this.ia+=(I-this.ia)*Math.min(1,dt*8);
+    c.setTransform(this.k,0,0,this.k,0,0);
+    // chamber
+    let g=c.createLinearGradient(0,0,0,300);g.addColorStop(0,"#070c1d");g.addColorStop(1,"#121b38");c.fillStyle=g;c.fillRect(0,0,480,300);
+    g=c.createRadialGradient(PX,40,4,PX,40,300);g.addColorStop(0,`rgba(255,176,64,${.26*src})`);g.addColorStop(1,"rgba(255,176,64,0)");c.fillStyle=g;c.fillRect(0,0,480,300);
+    // bench
+    g=c.createLinearGradient(0,BENCH,0,300);g.addColorStop(0,"#1f2a4f");g.addColorStop(1,"#141c37");c.fillStyle=g;c.fillRect(0,BENCH,480,32);
+    c.strokeStyle="rgba(140,170,255,.10)";c.lineWidth=1;for(let x=0;x<=480;x+=24){c.beginPath();c.moveTo(x,BENCH);c.lineTo(PX+(x-PX)*1.6,300);c.stroke()}
+    c.strokeStyle="rgba(140,170,255,.25)";c.beginPath();c.moveTo(0,BENCH+.5);c.lineTo(480,BENCH+.5);c.stroke();
+    // beam column
+    g=c.createLinearGradient(0,50,0,BENCH);g.addColorStop(0,`rgba(255,206,110,${.30*src})`);g.addColorStop(1,`rgba(255,206,110,${.05*src})`);
+    c.fillStyle=g;c.beginPath();c.moveTo(BEAM0+40,50);c.lineTo(BEAM1-40,50);c.lineTo(BEAM1,BENCH);c.lineTo(BEAM0,BENCH);c.closePath();
+    c.save();c.clip();c.fillRect(0,0,480,300);c.restore();
+    // shadow on bench
+    c.fillStyle=`rgba(0,0,0,${.18+.25*src})`;c.beginPath();c.ellipse(PX+10*Math.sin(th),BENCH+6,HALF*Math.cos(th)+26,6,0,0,Math.PI*2);c.fill();
+    // lamp
+    c.save();c.translate(PX,0);
+    c.fillStyle="#2b3657";c.beginPath();c.moveTo(-34,40);c.lineTo(34,40);c.lineTo(18,12);c.lineTo(-18,12);c.closePath();c.fill();
+    c.fillStyle="#3b4874";c.fillRect(-4,0,8,12);
+    if(!this.reduce){c.strokeStyle=`rgba(255,214,120,${.45*src})`;c.lineWidth=1.4;const r0=t/4000;
+      for(let i=0;i<14;i++){const an=r0+i*Math.PI/7;if(Math.sin(an)<-.1)continue;c.beginPath();c.moveTo(Math.cos(an)*16,44+Math.sin(an)*16);c.lineTo(Math.cos(an)*(26+4*Math.sin(t/300+i)),44+Math.sin(an)*(26+4*Math.sin(t/300+i)));c.stroke()}}
+    c.shadowColor="#ffbe55";c.shadowBlur=30*src+4;c.fillStyle=`rgb(${mix([120,90,60],[255,236,190],src)})`;c.beginPath();c.arc(0,44,11,0,Math.PI*2);c.fill();
+    c.restore();c.shadowBlur=0;
+    // photons
+    const faceY=x=>PY-(x-PX)*tn;
+    if(this.reduce){
+      for(let i=0;i<9;i++){const x=BEAM0+8+i*18,off=x-PX,hit=Math.abs(off)<=dx&&a<89.5;c.strokeStyle=hit?`rgba(255,214,120,${.4+.6*src})`:"rgba(160,180,230,.18)";c.lineWidth=2;c.setLineDash([5,6]);
+        c.beginPath();c.moveTo(x,56);c.lineTo(x,hit?faceY(x):BENCH);c.stroke()}c.setLineDash([]);
+    }else{
+      this.acc+=dt*95*src;while(this.acc>1){this.acc--;this.ph.push({x:BEAM0+6+Math.random()*(BEAM1-BEAM0-12),y:52,v:210+Math.random()*60})}
+      c.lineCap="round";
+      this.ph=this.ph.filter(p=>{p.y+=p.v*dt;const off=p.x-PX,on=Math.abs(off)<=dx&&a<89.5;
+        if(on&&p.y>=faceY(p.x)){this.sp.push({x:p.x,y:faceY(p.x),r:1,a:.9,hot:1});return false}
+        if(p.y>=BENCH){this.sp.push({x:p.x,y:BENCH,r:1,a:.35,hot:0});return false}
+        c.strokeStyle=on?"rgba(255,222,140,.95)":"rgba(255,222,140,.55)";c.lineWidth=2;c.beginPath();c.moveTo(p.x,p.y-9);c.lineTo(p.x,p.y);c.stroke();return true});
+      this.sp=this.sp.filter(s=>{s.r+=dt*(s.hot?46:30);s.a-=dt*(s.hot?2.6:1.8);if(s.a<=0)return false;
+        c.strokeStyle=s.hot?`rgba(255,236,170,${s.a})`:`rgba(170,190,255,${s.a})`;c.lineWidth=1.4;c.beginPath();c.ellipse(s.x,s.y,s.r*1.6,s.r*.6,s.hot?-th:0,0,Math.PI*2);c.stroke();return true});
+    }
+    // stand
+    c.fillStyle="#3a4670";c.beginPath();c.moveTo(PX,PY+4);c.lineTo(PX-15,BENCH);c.lineTo(PX+15,BENCH);c.closePath();c.fill();
+    // databot
+    c.save();c.translate(PX,PY);c.rotate(-th);
+    rr(c,-68,2,136,30,8);c.fillStyle="#dfe6f3";c.fill();
+    c.fillStyle="#1b2440";c.font="700 10px JetBrains Mono, ui-monospace, monospace";c.textAlign="center";c.fillText("DATABOT",0,22);
+    const face=mix([30,120,110],[255,232,150],this.ia);c.shadowColor="#ffd27a";c.shadowBlur=26*this.ia;
+    rr(c,-HALF-4,-4,HALF*2+8,7,3);c.fillStyle=`rgb(${face})`;c.fill();c.shadowBlur=0;
+    c.fillStyle="#ffffff";c.beginPath();c.arc(0,-1,4.5,0,Math.PI*2);c.fill();
+    // handle
+    const hx=HALF+10;c.fillStyle="#7fb0ff";c.beginPath();c.arc(hx,-1,6,0,Math.PI*2);c.fill();
+    if(this.hint&&!this.reduce){c.strokeStyle=`rgba(127,176,255,${.5+.5*Math.sin(t/260)})`;c.lineWidth=2;c.beginPath();c.arc(hx,-1,11+3*Math.sin(t/260),0,Math.PI*2);c.stroke()}
+    c.restore();
+    if(this.hint){c.fillStyle="#bcd3ff";c.font="600 12px Atkinson Hyperlegible, system-ui, sans-serif";c.textAlign="left";c.fillText("Drag to tilt",PX+HALF*Math.cos(th)+24,PY-HALF*Math.sin(th)-12)}
+    // angle arc
+    c.strokeStyle="rgba(127,176,255,.45)";c.setLineDash([4,4]);c.lineWidth=1;c.beginPath();c.moveTo(PX,PY);c.lineTo(PX+110,PY);c.stroke();c.setLineDash([]);
+    if(a>0.5){c.strokeStyle="#7fb0ff";c.lineWidth=2;c.beginPath();c.arc(PX,PY,54,0,-th,true);c.stroke();
+      const lx=PX+76*Math.cos(th/2),ly=PY-76*Math.sin(th/2);c.fillStyle="#7fb0ff";rr(c,lx-20,ly-11,40,20,10);c.fill();
+      c.fillStyle="#0b1226";c.font="700 12px JetBrains Mono, ui-monospace, monospace";c.textAlign="center";c.fillText(Math.round(a)+"°",lx,ly+4)}
+    // HUD: beam caught
+    c.textAlign="left";c.fillStyle="#9fb0d6";c.font="700 10px JetBrains Mono, ui-monospace, monospace";c.fillText("BEAM CAUGHT",16,24);
+    c.fillStyle="#ffffff";c.font="800 22px Archivo, Arial Narrow, sans-serif";c.fillText(Math.round(caught*100)+"%",16,48);
+    c.fillStyle="rgba(255,255,255,.12)";rr(c,16,56,96,6,3);c.fill();c.fillStyle="#ffc861";rr(c,16,56,Math.max(3,96*caught),6,3);c.fill();
+    // HUD: mini Earth
+    const gx=432,gy=60,R=26;
+    c.strokeStyle="rgba(255,214,120,.35)";c.lineWidth=1;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(gx+i*10,14);c.lineTo(gx+i*10,gy-Math.sqrt(Math.max(0,R*R-(i*10)**2)));c.stroke()}
+    g=c.createRadialGradient(gx-8,gy-10,4,gx,gy,R);g.addColorStop(0,"#5fa7ff");g.addColorStop(1,"#1a3f8f");c.fillStyle=g;c.beginPath();c.arc(gx,gy,R,0,Math.PI*2);c.fill();
+    c.strokeStyle="rgba(255,255,255,.35)";c.beginPath();c.moveTo(gx-R,gy);c.lineTo(gx+R,gy);c.stroke();
+    const mx=gx+R*Math.sin(th),my=gy-R*Math.cos(th);c.fillStyle="#ffc861";c.shadowColor="#ffc861";c.shadowBlur=8;c.beginPath();c.arc(mx,my,4,0,Math.PI*2);c.fill();c.shadowBlur=0;
+    const city=CITIES.reduce((b,x)=>Math.abs(x[0]-a)<Math.abs(b[0]-a)?x:b);
+    c.textAlign="right";c.fillStyle="#9fb0d6";c.font="600 10px Atkinson Hyperlegible, system-ui, sans-serif";c.fillText("Noon sun at the equinox hits",470,gy+R+18);
+    c.fillStyle="#ffffff";c.font="700 13px Atkinson Hyperlegible, system-ui, sans-serif";c.fillText(city[1]+" at this angle",470,gy+R+34);
+  }
+}
+function tween(e,target){e._t=target;if(e._raf)return;const step=()=>{const v=e._v??e._t;const n=v+(e._t-v)*0.2;e._v=Math.abs(e._t-n)<1?e._t:n;
+  e.textContent=Math.round(e._v).toLocaleString();e._raf=e._v===e._t?null:requestAnimationFrame(step)};e._raf=requestAnimationFrame(step)}
+const sc0=new Scene($("scene0"),{angle:()=>+$("ang0").value,src:()=>$("src0").value/100,setAngle:v=>{stopSweep();$("ang0").value=v;upd0()}});
+function upd0(){const a=+$("ang0").value,s=$("src0").value/100;$("ang0o").textContent=a+"°";$("src0o").textContent=Math.round(s*100)+"%";
+  const l=luxAt(a,s);tween($("lux0"),l);$("meter0").style.width=(l/(MAXLUX+AMBIENT)*100)+"%"}
+$("ang0").oninput=()=>{stopSweep();upd0()};$("src0").oninput=upd0;
+let sweep=null;
+function stopSweep(){if(sweep){cancelAnimationFrame(sweep.raf);sweep=null;$("btnSweep").textContent="Play: tilt slowly"}}
+upd0();
+$("btnSweep").onclick=()=>{if(sweep){stopSweep();return}
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;sc0.hint=false;
+  sweep={t0:performance.now()-(+$("ang0").value/90)*8000};$("btnSweep").textContent="Pause";
+  const step=now=>{const s=(now-sweep.t0)/1000,ph=(s%16)/16,a=Math.round(90*(ph<.5?ph*2:2-ph*2));
+    $("ang0").value=reduce?Math.round(a/15)*15:a;upd0();sweep.raf=requestAnimationFrame(step)};
+  sweep.raf=requestAnimationFrame(step)};
+
+/* ---------- predict ---------- */
+const PRED=[
+ {k:"same",t:"Stays the same",d:"The light hasn't changed, so the reading won't.",p:"M4 20 L68 20"},
+ {k:"gradual",t:"Drops a little at each tilt",d:"Small steps down.",p:"M4 10 L24 10 L28 18 L46 18 L50 26 L68 26"},
+ {k:"steep",t:"Drops a lot, most at the end",d:"Small drop, then a big one.",p:"M4 8 L24 8 L28 16 L46 16 L50 38 L68 38"},
+ {k:"up",t:"Goes up",d:"Tilting catches more light.",p:"M4 34 L24 34 L28 24 L46 24 L50 10 L68 10"}];
+function renderChoices(){
+  const c=$("choices");c.innerHTML="";
+  PRED.forEach(o=>{const b=document.createElement("button");b.className="choice";b.setAttribute("aria-pressed",S.prediction===o.k);
+    b.innerHTML=`<svg viewBox="0 0 72 44" aria-hidden="true"><rect x="1" y="1" width="70" height="42" rx="6" fill="none" stroke="var(--line)"/><path d="${o.p}" fill="none" stroke="var(--sun)" stroke-width="3" stroke-linejoin="round"/></svg><span><b>${o.t}</b><small>${o.d}</small></span>`;
+    b.onclick=()=>{S.prediction=o.k;persist();renderChoices();if(window.LabKit)LabKit.saveResponse("prediction",o.t)};c.appendChild(b)});
+  $("toConnect").disabled=!S.prediction;
+}
+renderChoices();$("predWhy").oninput=()=>{persist();S.answers.predictWhy=$("predWhy").value;if(window.LabKit)LabKit.saveResponse("prediction_why",$("predWhy").value)};
+
+/* ---------- connect: practice sensor ---------- */
+let simTimer=null;
+function setMode(m,name){
+  S.mode=m;S.device=name||null;const on=!!m;
+  ["dot","dot3"].forEach(i=>$(i).classList.toggle("on",on));
+  const txt=on?(m==="sim"?"Using the practice sensor":"Connected to "+name):"Not connected";
+  $("connText").textContent=txt;$("connText3").textContent=txt;
+  $("btnDisc").hidden=!on;$("btnBle").hidden=on;$("btnSim").hidden=on;
+  $("toCollect").disabled=!on;$("simPanel").hidden=m==="ble";
+  const tag=$("modeTag");tag.hidden=!on;tag.className="tag"+(m==="sim"?" sim":"");tag.textContent=m==="sim"?"Practice sensor":"Databot live";
+}
+function startSim(){
+  $("connMsg").textContent="";setMode("sim");clearInterval(simTimer);
+  simTimer=setInterval(()=>{S.simAngle+= (S.simTarget-S.simAngle)*0.45;
+    const noise=1+(Math.random()-.5)*0.025;pushLive(luxAt(S.simAngle,S.simSrc)*noise)},250);
+}
+$("btnSim").onclick=startSim;
+function upd3(){S.simTarget=+$("ang3").value;S.simSrc=$("src3").value/100;$("ang3o").textContent=S.simTarget+"°";$("src3o").textContent=Math.round(S.simSrc*100)+"%"}
+$("ang3").oninput=upd3;$("src3").oninput=upd3;
+const sc3=new Scene($("scene3"),{angle:()=>S.simAngle,src:()=>S.simSrc,setAngle:v=>{$("ang3").value=v;upd3()}});
+
+function pushLive(v){S.live=v;tween($("lux2"),v);tween($("lux3"),v)}
+
+/* ---------- connect: real databot over Web Bluetooth (Nordic UART) ---------- */
+const DATABOT={service:"6e400001-b5a3-f393-e0a9-e50e24dcca9e",rx:"6e400002-b5a3-f393-e0a9-e50e24dcca9e",tx:"6e400003-b5a3-f393-e0a9-e50e24dcca9e",
+  startCommand:null /* set to the databot's stream-start command if your firmware needs one */};
+let ble={dev:null,buf:""};
+$("btnBle").onclick=async()=>{
+  const m=$("connMsg");m.textContent="";
+  if(window.LabKit&&LabKit.sensors){
+    try{const name=await LabKit.sensors.connect("databot",v=>pushLive(v),onBleLost);clearInterval(simTimer);setMode("ble",name)}
+    catch(e){m.textContent=e.message+" You can use the practice sensor for now."}
+    return;
+  }
+  if(!navigator.bluetooth){m.textContent="This browser can't reach Bluetooth from here. Open the experiment in Chrome or Edge on a laptop, or use the practice sensor.";return}
+  try{
+    const dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:"DB_"}],optionalServices:[DATABOT.service]});
+    $("connText").textContent="Connecting to "+dev.name+"…";
+    const srv=await dev.gatt.connect();const svc=await srv.getPrimaryService(DATABOT.service);
+    const tx=await svc.getCharacteristic(DATABOT.tx);await tx.startNotifications();
+    tx.addEventListener("characteristicvaluechanged",e=>onBle(new TextDecoder().decode(e.target.value)));
+    if(DATABOT.startCommand){const rx=await svc.getCharacteristic(DATABOT.rx);await rx.writeValue(new TextEncoder().encode(DATABOT.startCommand))}
+    dev.addEventListener("gattserverdisconnected",onBleLost);
+    ble.dev=dev;clearInterval(simTimer);setMode("ble",dev.name);
+  }catch(err){m.textContent=err&&err.name==="NotFoundError"?"No databot was picked. Turn it on and try again.":"Couldn't connect: "+(err&&err.message||"unknown error")+". Try again, or use the practice sensor."}
+};
+function onBle(chunk){
+  ble.buf+=chunk;const lines=ble.buf.split(/\r?\n/);ble.buf=lines.pop();
+  lines.forEach(line=>{let v=null;
+    try{const o=JSON.parse(line);for(const k in o){if(/lux|light|amb/i.test(k)&&isFinite(+o[k])){v=+o[k];break}}}catch(e){const n=parseFloat(line);if(isFinite(n))v=n}
+    if(v!==null)pushLive(v)});
+}
+function onBleLost(){setMode(null);stopRec();$("recMsg").textContent="The databot disconnected. Go back to Connect and press Connect databot to reconnect.";$("connMsg").textContent="The databot disconnected."}
+$("btnDisc").onclick=()=>{if(ble.dev&&ble.dev.gatt.connected)ble.dev.gatt.disconnect();clearInterval(simTimer);setMode(null);$("lux2").textContent="—";$("lux3").textContent="—"};
+
+/* ---------- collect ---------- */
+let recTimer=null;S.vt=0;S.speed=1;S.paused=false;S.auto=false;S.cpDone={};
+$("btnRec").onclick=()=>{S.rec?stopRec():startRec()};
+function startRec(){
+  if(!S.mode){$("recMsg").textContent="Connect a sensor first.";return}
+  $("recMsg").textContent="";S.data=[];S.half=S.side=null;S.sample=false;S.rec=true;S.vt=0;S.next=0;S.paused=false;S.lastSec=-1;
+  $("btnRec").textContent="Stop recording";$("btnRec").className="";$("btnHalf").disabled=false;$("btnSide").disabled=true;
+  recTimer=setInterval(()=>{if(S.paused)return;S.vt+=0.1*(S.auto?S.speed:1);
+    let grew=false;while(S.vt>=S.next){if(S.live!=null){S.data.push({t:+S.next.toFixed(1),lux:Math.round(S.live)});grew=true}S.next+=DT}if(grew)drawLiveChart();
+    const sec=Math.floor(S.vt);if(sec!==S.lastSec){S.lastSec=sec;if(window.LabKit&&LabKit.time)LabKit.time(sec+" s");drawLiveChart()}
+    if(S.auto)autoScript();
+    $("recInfo").textContent=`${S.auto?"Autoplay":"Recording"}: ${sec} s, ${S.data.length} readings`;if(S.vt>=DUR)stopRec()},100);
+}
+function stopRec(){
+  if(!S.rec)return;S.rec=false;clearInterval(recTimer);S.auto=false;S.paused=false;updAuto();
+  $("btnRec").textContent="Record again";$("btnRec").className="sun";$("btnHalf").disabled=true;$("btnSide").disabled=true;
+  const last=S.data.length?S.data[S.data.length-1].t:0;
+  $("recInfo").textContent=`Recorded: ${Math.round(last)} s, ${S.data.length} readings`;
+  $("toAnalyze").disabled=S.data.length<4;drawLiveChart();fillFindings();
+}
+$("btnHalf").onclick=()=>{S.half=+S.vt.toFixed(1);$("btnHalf").disabled=true;$("btnSide").disabled=false;
+  if(S.mode==="sim"&&+$("ang3").value<30){$("ang3").value=45;upd3()}};
+$("btnSide").onclick=()=>{S.side=+S.vt.toFixed(1);$("btnSide").disabled=true;
+  if(S.mode==="sim"&&+$("ang3").value<60){$("ang3").value=75;upd3()}};
+
+/* ---------- autoplay ---------- */
+function setTilt(a){$("ang3").value=a;upd3()}
+const CHECKPOINTS=[
+  {at:12,key:"notice1",q:"What do you notice about the reading while the databot lies flat?",hint:"Is it steady? Roughly what number?"},
+  {at:29,key:"notice2",q:"What happened to the reading when the databot tilted halfway?",hint:"Compare it with the flat reading. More, less, about the same?"},
+  {at:46,key:"notice3",q:"Almost sideways now. What do you notice, and what do you wonder?",hint:"Did the drop match your prediction?"}];
+function checkpoint(cp){
+  S.paused=true;updAuto();const h=$("cpHolder");
+  h.innerHTML=`<div class="checkpoint" role="group" aria-labelledby="cpq"><span class="tagline">Notice and wonder · paused</span>
+    <h3 id="cpq">${cp.q}</h3><p class="muted" style="font-size:14px;margin:0 0 8px">${cp.hint}</p>
+    <textarea id="cpA" rows="2" placeholder="I notice… I wonder…">${(S.answers[cp.key]||"").replace(/</g,"&lt;")}</textarea>
+    <div class="rec-row"><button class="primary" id="cpGo">Save and continue</button><button class="small" id="cpSpeak">Speak</button><span class="muted" id="cpMsg" style="font-size:13px;align-self:center"></span></div></div>`;
+  if(typeof VO!=="undefined"&&VO.on)readEls([$("cpq")]);
+  h.scrollIntoView({block:"center",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+  $("cpA").focus({preventScroll:true});
+  $("cpSpeak").onclick=async()=>{if(!(window.LabKit&&LabKit.dictate)){$("cpMsg").textContent="Type your answer instead.";return}
+    $("cpMsg").textContent="Listening…";try{const t=await LabKit.dictate();$("cpA").value=($("cpA").value?$("cpA").value.trimEnd()+" ":"")+t;$("cpMsg").textContent=""}catch(e){$("cpMsg").textContent=e.message}};
+  $("cpGo").onclick=()=>{const v=$("cpA").value.trim();S.answers[cp.key]=v;persist();if(window.LabKit)LabKit.saveResponse(cp.key,v);
+    h.innerHTML="";S.paused=false;updAuto()};
+}
+function autoScript(){
+  for(const cp of CHECKPOINTS){if(S.vt>=cp.at&&!S.cpDone[cp.key]){S.cpDone[cp.key]=1;checkpoint(cp);return}}
+  if(S.vt>=15&&S.half==null){setTilt(45);$("btnHalf").click()}
+  if(S.vt>=33&&S.side==null){setTilt(75);$("btnSide").click()}
+  if(S.vt>=50)stopRec();
+}
+function updAuto(){const b=$("btnAuto");b.textContent=S.auto?(S.paused?"Resume":"Pause"):"Autoplay experiment";
+  $("btnRec").disabled=S.auto}
+$("autoSpeed").onchange=e=>{S.speed=+e.target.value};
+$("btnAuto").onclick=()=>{
+  if(S.auto){S.paused=!S.paused;updAuto();return}
+  if(S.mode!=="sim")startSim();
+  setTilt(0);S.simAngle=0;S.auto=true;S.cpDone={};$("cpHolder").innerHTML="";startRec();updAuto();
+};
+if(window.LabKit&&LabKit.onControl)LabKit.onControl(cmd=>{if(!S.rec)return;
+  if(cmd==="pause"){S.paused=true;updAuto()}if(cmd==="play"&&S.auto){S.paused=false;updAuto()}});
+
+/* ---------- chart ---------- */
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v)));for(const m of[1,2,2.5,5,10])if(m*p>=v)return m*p}
+function drawChart(svg,data,half,side,scrubIdx){
+  svg.innerHTML="";const W=760,H=330,L=70,R=20,T=28,B=50,pw=W-L-R,ph=H-T-B;
+  const ymax=niceMax(Math.max(500,...data.map(d=>d.lux))*1.08);
+  const X=t=>L+t/DUR*pw,Y=v=>T+ph-v/ymax*ph;
+  const f={"font-family":"Atkinson Hyperlegible, sans-serif","font-size":13,fill:"var(--muted)"};
+  for(let i=0;i<=5;i++){const v=ymax*i/5,y=Y(v);el("line",{x1:L,x2:L+pw,y1:y,y2:y,stroke:"var(--line)"},svg);
+    el("text",{...f,x:L-8,y:y+4,"text-anchor":"end"},svg).textContent=Math.round(v).toLocaleString()}
+  for(let t=0;t<=DUR;t+=10){const x=X(t);el("line",{x1:x,x2:x,y1:T,y2:T+ph,stroke:"var(--line)"},svg);
+    el("text",{...f,x,y:T+ph+20,"text-anchor":"middle"},svg).textContent=t}
+  el("line",{x1:L,x2:L+pw,y1:T+ph,y2:T+ph,stroke:"var(--ink)","stroke-width":1.5},svg);
+  el("line",{x1:L,x2:L,y1:T,y2:T+ph,stroke:"var(--ink)","stroke-width":1.5},svg);
+  el("text",{...f,x:L+pw/2,y:H-6,"text-anchor":"middle","font-weight":700,fill:"var(--ink)"},svg).textContent="Time (s)";
+  el("text",{...f,x:16,y:T+ph/2,"text-anchor":"middle","font-weight":700,fill:"var(--ink)",transform:`rotate(-90 16 ${T+ph/2})`},svg).textContent="Light (lux)";
+  [[half,"var(--teal)","Halfway"],[side,"var(--violet)","Almost sideways"]].forEach(([t,c,l])=>{if(t==null)return;const x=X(t);
+    el("line",{x1:x,x2:x,y1:T,y2:T+ph,stroke:c,"stroke-width":2,"stroke-dasharray":"6 5"},svg);
+    el("text",{...f,x,y:T-10,"text-anchor":"middle",fill:c,"font-weight":700},svg).textContent=l});
+  if(!data.length){el("text",{...f,x:L+pw/2,y:T+ph/2,"text-anchor":"middle","font-size":15},svg).textContent="Press Start recording to see your data here";return}
+  el("path",{d:data.map((d,i)=>(i?"L":"M")+X(d.t).toFixed(1)+" "+Y(d.lux).toFixed(1)).join(""),fill:"none",stroke:"var(--sun)","stroke-width":2.5,"stroke-linejoin":"round"},svg);
+  if(data.length<=130)data.forEach(d=>el("circle",{cx:X(d.t),cy:Y(d.lux),r:2.4,fill:"var(--sun)"},svg));
+  if(S.rec&&scrubIdx==null){const d=data[data.length-1];el("circle",{cx:X(d.t),cy:Y(d.lux),r:9,fill:"var(--sun)","fill-opacity":.25,class:"pulse"},svg);el("circle",{cx:X(d.t),cy:Y(d.lux),r:5,fill:"var(--sun)",stroke:"var(--panel)","stroke-width":2},svg)}
+  if(scrubIdx!=null&&data[scrubIdx]){const d=data[scrubIdx];
+    el("line",{x1:X(d.t),x2:X(d.t),y1:T,y2:T+ph,stroke:"var(--ink)","stroke-opacity":.35},svg);
+    el("circle",{cx:X(d.t),cy:Y(d.lux),r:7,fill:"var(--panel)",stroke:"var(--ink)","stroke-width":2.5},svg)}
+}
+function drawLiveChart(){drawChart($("chart3"),S.data,S.half,S.side)}
+
+/* ---------- analyze ---------- */
+function sampleRun(){const d=[];let a=0;for(let t=0;t<=48;t+=0.5){const tgt=t<14?0:t<35?45:75;a+=(tgt-a)*0.55;d.push({t,lux:Math.round(luxAt(a,.92)*(1+(Math.random()-.5)*.02))})}
+  S.data=d;S.half=14.3;S.side=35.2;S.sample=true}
+function avg(arr){return arr.length?arr.reduce((s,d)=>s+d.lux,0)/arr.length:null}
+function phases(){
+  const d=S.data,end=d.length?d[d.length-1].t:0,settle=2;
+  const flat=avg(d.filter(x=>x.t<(S.half??end+1)-0.5));
+  const half=S.half==null?null:avg(d.filter(x=>x.t>=S.half+settle&&x.t<(S.side??end+1)-0.5));
+  const side=S.side==null?null:avg(d.filter(x=>x.t>=S.side+settle));
+  return{flat,half,side};
+}
+function fillFindings(){const p=phases();[["flat",p.flat],["half",p.half],["side",p.side]].forEach(([k,v])=>{const el=$("f_"+k);
+  if(v!=null&&!el.dataset.typed)el.value=Math.round(v)})}
+function findingsRows(){return [["Flat, 0°","f_flat","n_flat"],["Halfway, ~45°","f_half","n_half"],["Almost sideways, ~75°","f_side","n_side"]]
+  .map(([l,f,n])=>[l,$(f).value?$(f).value+" lux":"",$(n).value])}
+["flat","half","side"].forEach(k=>{
+  $("f_"+k).addEventListener("input",e=>{e.target.dataset.typed=1;S.answers["find_"+k]=e.target.value;persist();if(window.LabKit)LabKit.saveResponse("find_"+k+"_lux",e.target.value)});
+  $("n_"+k).addEventListener("change",e=>{S.answers["note_"+k]=e.target.value;persist();if(window.LabKit)LabKit.saveResponse("find_"+k+"_noticed",e.target.value)});
+  if(S.answers["note_"+k])$("n_"+k).value=S.answers["note_"+k];});
+/* challenge: find the half-light angle */
+function updChallenge(){const a=+$("chAng").value,l=luxAt(a,1),half=luxAt(0,1)/2;$("chAngO").textContent=a+"°";tween($("chLux"),l);
+  $("chBar").style.width=Math.min(100,l/luxAt(0,1)*100)+"%";
+  if(Math.abs(l-half)/half<0.035){$("chWin").textContent=`You found it: ${a}°. Half the beam lands on the sensor.`;$("chWhy").hidden=false;
+    if(!S.answers.challenge){S.answers.challenge=a+"°";persist();if(window.LabKit)LabKit.saveResponse("challenge_angle",a+"°")}}
+  else $("chWin").textContent=""}
+$("chAng").oninput=updChallenge;
+$("chGuess").onchange=e=>{S.answers.challengeGuess=e.target.value;persist();if(window.LabKit)LabKit.saveResponse("challenge_guess",e.target.value+"°")};
+$("chWhyT").onchange=e=>{S.answers.challengeWhy=e.target.value;persist();if(window.LabKit)LabKit.saveResponse("challenge_why",e.target.value)};
+/* ---------- prediction check: predict, observe, explain ---------- */
+const SHAPE={same:"stays about the same",up:"goes up",gradual:"drops by about the same amount at each tilt",steep:"drops a little at first, then a lot"};
+function angleShape(p){if(p.flat==null||p.half==null||p.side==null||!p.flat)return null;
+  if(Math.abs(p.flat-p.side)/p.flat<0.12)return "same";if(p.side>p.flat)return "up";
+  const r1=(p.flat-p.half)/45,r2=(p.half-p.side)/30;return r2>r1*1.3?"steep":"gradual"}
+function predSummary(){const p=phases(),ds=angleShape(p),pr=PRED.find(x=>x.k===S.prediction);if(!ds||!pr)return null;
+  return {pr,ds,ok:pr.k===ds}}
+function renderPredCheck(){const el=$("predCheck"),c=predSummary();if(!c){el.hidden=true;return}
+  const p=phases(),mx=Math.max(p.flat,p.half,p.side),y=v=>(38-30*v/(mx||1)).toFixed(1);
+  const path=`M4 ${y(p.flat)} L24 ${y(p.flat)} L28 ${y(p.half)} L46 ${y(p.half)} L50 ${y(p.side)} L68 ${y(p.side)}`;
+  const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+  S.answers._predmatch=c.ok?"yes":"no";S.answers._datashape=SHAPE[c.ds];
+  if(window.LabKit){LabKit.saveResponse("_predmatch",S.answers._predmatch);LabKit.saveResponse("_datashape",SHAPE[c.ds])}
+  el.className="panel pc "+(c.ok?"ok":"no");el.hidden=false;
+  el.innerHTML=`<p class="eyebrow">Prediction check</p><h3>${c.ok?"Your evidence backs up your prediction":"Your evidence tells a different story"}</h3>
+   <div class="pc-row"><figure><figcaption>You predicted</figcaption><svg viewBox="0 0 72 44" aria-hidden="true"><path d="${c.pr.p}" class="pc-pred"/></svg><b>${esc(c.pr.t)}</b></figure>
+   <span class="pc-vs" aria-hidden="true">${c.ok?"=":"≠"}</span>
+   <figure><figcaption>Your data shows</figcaption><svg viewBox="0 0 72 44" aria-hidden="true"><path d="${path}" class="pc-data"/></svg><b>The reading ${esc(SHAPE[c.ds])}</b></figure></div>
+   <p class="pc-msg">${c.ok?"Nice. Now the important part: explain <b>why</b> it happens.":"That's not a mistake, it's science. Scientists change their minds when the evidence disagrees with them."}</p>
+   <label for="pcWhy" class="pc-q">${c.ok?"What in your data convinced you?":"What surprised you, and what do you think now?"}</label>
+   <textarea id="pcWhy" rows="2" placeholder="${c.ok?"My data shows…":"I thought… but my data shows… so now I think…"}"></textarea>
+   <button type="button" class="small" id="pcSpeak"${window.LabKit&&LabKit.dictate?"":" hidden"}>Speak my answer</button>`;
+  const ta=$("pcWhy");ta.value=S.answers.predrethink||"";
+  ta.oninput=()=>{S.answers.predrethink=ta.value;persist();if(window.LabKit)LabKit.saveResponse("predrethink",ta.value)};
+  $("pcSpeak").onclick=async()=>{try{const t=await LabKit.dictate();ta.value=(ta.value?ta.value.trimEnd()+" ":"")+t;ta.dispatchEvent(new Event("input"))}catch(e){}}}
+function renderAnalyze(){
+  setTimeout(updChallenge,0);
+  if(S.data.length<4)sampleRun();
+  $("sampleNote").hidden=!S.sample;
+  const sc=$("scrub");sc.max=S.data.length-1;if(+sc.value>S.data.length-1)sc.value=Math.floor(S.data.length/6);
+  const upd=()=>{const i=+sc.value,d=S.data[i];drawChart($("chart4"),S.data,S.half,S.side,i);
+    $("scrubText").textContent=`At ${d.t} s the light reading was ${d.lux.toLocaleString()} lux`};
+  sc.oninput=upd;upd();
+  $("tbl").innerHTML="<tr><th>Time (s)</th><th>Light (lux)</th></tr>"+S.data.map(d=>`<tr><td>${d.t}</td><td>${d.lux.toLocaleString()}</td></tr>`).join("");
+  const p=phases(),pct=v=>p.flat&&v!=null?Math.round(v/p.flat*100)+"% of flat":"";
+  const card=(cls,l,v)=>`<div class="phase ${cls}"><div class="lbl">${l}</div><div class="v">${v==null?"—":Math.round(v).toLocaleString()+" lux"}</div><div class="pct">${v==null?"No marker pressed":(cls==="flat"?"Your starting point":pct(v))}</div></div>`;
+  $("phases").innerHTML=card("flat","Flat (0°)",p.flat)+card("half","Halfway (~45°)",p.half)+card("side","Almost sideways (~75°)",p.side);
+  drawCompare(p);
+  renderPredCheck();
+}
+function drawCompare(p){
+  const svg=$("compare");svg.innerHTML="";const L=170,pw=560,rows=[["Halfway",p.half,71,"var(--teal)"],["Almost sideways",p.side,26,"var(--violet)"]];
+  const f={"font-family":"Atkinson Hyperlegible, sans-serif","font-size":13,fill:"var(--muted)"};
+  [0,25,50,75,100].forEach(v=>{const x=L+v/100*pw;el("line",{x1:x,x2:x,y1:10,y2:150,stroke:"var(--line)"},svg);el("text",{...f,x,y:166,"text-anchor":"middle"},svg).textContent=v+"%"});
+  rows.forEach(([l,v,model,c],i)=>{const y=22+i*66;
+    el("text",{...f,x:L-10,y:y+22,"text-anchor":"end","font-weight":700,fill:"var(--ink)","font-size":14},svg).textContent=l;
+    const m=v!=null&&p.flat?Math.min(110,v/p.flat*100):null;
+    el("rect",{x:L,y,width:m==null?0:m/100*pw,height:18,rx:4,fill:c},svg);
+    el("text",{...f,x:L+(m??0)/100*pw+8,y:y+14,fill:"var(--ink)","font-weight":700},svg).textContent=m==null?"no data":`You: ${Math.round(m)}%`;
+    el("rect",{x:L,y:y+24,width:model/100*pw,height:12,rx:3,fill:c,"fill-opacity":.3},svg);
+    el("text",{...f,x:L+model/100*pw+8,y:y+35},svg).textContent=`Cosine rule: ${model}%`});
+}
+
+/* ---------- report (CER) ---------- */
+function ev(){const p=phases(),r=v=>v==null?"?":Math.round(v).toLocaleString();return p}
+const PROMPTS=[
+ {k:"claim",tag:"CER: Claim",q:"What happens to the light reading as the databot is tilted away from facing the light?",help:"Write one clear sentence that answers the question."},
+ {k:"ev1",tag:"CER: Evidence",q:"What was the light reading when the databot lay flat?",help:"Use the number from your graph.",hint:()=>{const p=phases();return p.flat?`Your flat average: about ${Math.round(p.flat).toLocaleString()} lux.`:null}},
+ {k:"ev2",tag:"CER: Evidence",q:"What happened to the reading when you tilted it halfway?",help:"Give the number and say how much of the flat reading it was.",hint:()=>{const p=phases();return p.half&&p.flat?`Your halfway average: about ${Math.round(p.half).toLocaleString()} lux (${Math.round(p.half/p.flat*100)}% of flat).`:null}},
+ {k:"ev3",tag:"CER: Evidence",q:"What happened when you tilted it almost sideways?",help:"Give the number and compare it to the flat reading.",hint:()=>{const p=phases();return p.side&&p.flat?`Your almost-sideways average: about ${Math.round(p.side).toLocaleString()} lux (${Math.round(p.side/p.flat*100)}% of flat).`:null}},
+ {k:"pred",tag:"Prediction check",q:"Was your prediction right?",help:"Look back at the graph shape you picked. What matched, and what surprised you?",hint:()=>{const c=predSummary();return c?`You predicted "${c.pr.t}". Your data: the reading ${SHAPE[c.ds]}.`:null},hint0:()=>{const o=PRED.find(x=>x.k===S.prediction);return o?`You predicted: “${o.t}”.`:null}},
+ {k:"why",tag:"CER: Reasoning",q:"Why does tilting the sensor change the reading?",help:"Use the idea of the same light spreading over a larger area. The ray picture in Get started may help."},
+ {k:"season",tag:"CER: Reasoning",q:"How does this explain the seasons on Earth?",help:"Connect your evidence to how the angle of sunlight hitting Earth's surface changes during the year."},
+ {k:"error",tag:"Evaluate",q:"What could have made your measurements less accurate?",help:"Think about holding the databot still, the angles you used, shadows and other lights in the room."},
+ {k:"next",tag:"Extend",q:"What would you test next?",help:"Suggest one new question you could investigate with the databot's light sensor."}];
+function renderPrompt(){
+  $("final").hidden=true;$("checkBox").hidden=true;$("promptBox").hidden=false;
+  const pills=$("pills");pills.innerHTML="";
+  PROMPTS.forEach((p,i)=>{const b=document.createElement("button");b.textContent=i+1;b.setAttribute("aria-label","Question "+(i+1));
+    b.className=(i===S.pIdx?"cur ":"")+((S.answers[p.k]||"").trim()?"filled":"");b.onclick=()=>{S.pIdx=i;renderPrompt()};pills.appendChild(b)});
+  const p=PROMPTS[S.pIdx];$("pTag").textContent=p.tag;$("pQ").textContent=p.q;$("pHelp").textContent=p.help;
+  const h=p.hint&&p.hint();$("pHint").hidden=!h;if(h)$("pHint").textContent=h;
+  $("pAns").value=S.answers[p.k]||"";$("pPrev").disabled=S.pIdx===0;
+  $("pNext").textContent=S.pIdx===PROMPTS.length-1?"Finish report":"Next question";
+  if(typeof VO!=="undefined"&&VO.on&&S.step===5)setTimeout(readPrompt,200);
+}
+function readPrompt(){if(VO.on)readEls([$("pTag"),$("pQ"),$("pHelp"),$("pHint")])}
+$("pAns").oninput=()=>{S.answers[PROMPTS[S.pIdx].k]=$("pAns").value;persist();if(window.LabKit)LabKit.saveResponse(PROMPTS[S.pIdx].k,$("pAns").value);
+  const b=$("pills").children[S.pIdx];if(b)b.classList.toggle("filled",!!$("pAns").value.trim())};
+$("pSpeak").hidden=!(window.LabKit&&LabKit.dictate);
+$("pSpeak").onclick=async()=>{const m=$("pSpeakMsg");m.textContent="Listening…";
+  try{const t=await LabKit.dictate();const a=$("pAns");a.value=(a.value?a.value.trimEnd()+" ":"")+t;a.dispatchEvent(new Event("input"));m.textContent=""}
+  catch(e){m.textContent=e.message}};
+$("pPrev").onclick=()=>{S.pIdx--;renderPrompt()};
+$("pNext").onclick=()=>{if(S.pIdx<PROMPTS.length-1){S.pIdx++;renderPrompt()}else showCheck()};
+/* ---------- report check: feedback before sending ---------- */
+function reportChecks(){const A=k=>(S.answers[k]||"").trim(),words=t=>(t.match(/[\p{L}\p{N}]+/gu)||[]).length;
+  const part=q=>/claim/i.test(q.tag)?"claim":/evidence/i.test(q.tag)?"evidence":/reason/i.test(q.tag)?"reasoning":"other";
+  const first=p=>PROMPTS.find(q=>part(q)===p),txt=p=>PROMPTS.filter(q=>part(q)===p).map(q=>A(q.k)).join(" ");const out=[];
+  const c=txt("claim").toLowerCase(),hit=/(tilt|angle|turn)/.test(c)&&/(light|reading|lux|bright)/.test(c);
+  out.push({ok:words(c)>=6&&hit,label:"Claim",good:"says how the tilt changes the light reading.",tip:words(c)<6?"Write your claim as one full sentence.":"Say how the angle of the databot changes the light reading.",k:first("claim").k});
+  const n=(txt("evidence").match(/\d+(?:[.,]\d+)?/g)||[]).length;
+  out.push({ok:n>=2,label:"Evidence",good:"uses numbers from your own data.",tip:n?"Compare at least two of your readings, with units.":"Add your readings from the findings table, in lux.",k:first("evidence").k});
+  const r=txt("reasoning"),link=/\b(because|so|therefore|this means|which means|due to|as a result|since)\b/i.test(r);
+  out.push({ok:words(r)>=12&&link,label:"Reasoning",good:"explains why, not just what.",tip:!link?"Explain why it happens. Try starting with \u201cThis happens because\u2026\u201d":"Add more detail: link your evidence to the idea of light spreading out.",k:first("reasoning").k});
+  const pc=predSummary();if(pc&&!pc.ok)out.push({ok:(S.answers.predrethink||"").trim().length>10,label:"Prediction",good:"you explained what changed your mind.",tip:"Your data didn't match your prediction. Say what changed your mind.",go:4});
+  const empty=PROMPTS.filter(q=>!A(q.k));if(empty.length)out.push({ok:false,label:"Unanswered",tip:`${empty.length} question${empty.length>1?"s are":" is"} still empty.`,k:empty[0].k});
+  return out}
+function showCheck(){const list=reportChecks(),todo=list.filter(c=>!c.ok);
+  const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+  const put=(k,v)=>{S.answers[k]=v;persist();if(window.LabKit)LabKit.saveResponse(k,v)};
+  if(S.answers._checkfirst==null)put("_checkfirst",String(todo.length));
+  $("promptBox").hidden=true;const box=$("checkBox");box.hidden=false;
+  box.innerHTML=`<p class="eyebrow">Before you send it</p><h3 tabindex="-1">${todo.length?"Make your report even stronger":"Your report is ready to send"}</h3>
+   <ul class="rc-list">${list.map((c,i)=>`<li class="${c.ok?"ok":"todo"}"><span class="rc-i" aria-hidden="true">${c.ok?"✓":"✎"}</span><div><b>${esc(c.label)}</b>${c.ok?": "+esc(c.good):": "+esc(c.tip)+` <button class="small" data-fix="${i}">Fix this</button>`}</div></li>`).join("")}</ul>
+   <div class="nav"><button id="rcBack">Keep improving</button><button class="primary" id="rcSend">${todo.length?"Send it anyway":"Send to my teacher"}</button></div>`;
+  box.querySelectorAll("[data-fix]").forEach(b=>b.onclick=()=>{const c=list[+b.dataset.fix];box.hidden=true;if(c.go!=null){go(c.go);setTimeout(()=>{const t=$("pcWhy");if(t){t.scrollIntoView({block:"center"});t.focus()}},500)}else{S.pIdx=Math.max(0,PROMPTS.findIndex(q=>q.k===c.k));renderPrompt();$("pAns").focus()}});
+  $("rcBack").onclick=()=>{const c=todo.find(x=>x.k)||{};S.pIdx=c.k?Math.max(0,PROMPTS.findIndex(q=>q.k===c.k)):0;renderPrompt()};
+  $("rcSend").onclick=()=>{put("_checksend",String(todo.length));box.hidden=true;showFinal()};
+  box.querySelector("h3").focus();if(VO.on)setTimeout(()=>readEls([...box.querySelectorAll("h3,li")]),200)}
+function cerGroups(){const part=q=>/claim/i.test(q.tag)?"Claim":/evidence/i.test(q.tag)?"Evidence":/reason/i.test(q.tag)?"Reasoning":"Going further";
+  return ["Claim","Evidence","Reasoning","Going further"].map(h=>[h,PROMPTS.filter(q=>part(q)===h)]).filter(g=>g[1].length)}
+function reportText(){
+  const p=phases(),r=v=>v==null?"—":Math.round(v).toLocaleString()+" lux";
+  const lines=["ANGLE OF LIGHT – EXPERIMENT REPORT","",
+    `Sensor: ${S.sample?"sample data":S.mode==="ble"?"databot ("+S.device+")":"practice sensor"}`,
+    `Flat: ${r(p.flat)} | Halfway: ${r(p.half)} | Almost sideways: ${r(p.side)}`,""];
+  lines.push("My findings:");findingsRows().forEach(r=>lines.push(`  ${r[0]}: ${r[1]||"—"}${r[2]?" — "+r[2]:""}`));
+  if(S.answers.challenge)lines.push(`Challenge: I found half the light at ${S.answers.challenge} (my guess: ${S.answers.challengeGuess||"—"}°). ${S.answers.challengeWhy||""}`);
+  ["notice1","notice2","notice3"].forEach((k,i)=>{if(S.answers[k])lines.push(`Notice and wonder ${i+1}: ${S.answers[k]}`)});
+  lines.push("");
+  const c=predSummary();
+  if(c){lines.push("MY PREDICTION",`I predicted: ${c.pr.t}. My data showed the reading ${SHAPE[c.ds]}, so my prediction ${c.ok?"was supported":"was not supported"}.`);
+    if((S.answers.predrethink||"").trim())lines.push(S.answers.predrethink.trim());lines.push("")}
+  let n=0;cerGroups().forEach(([h,qs])=>{lines.push(h);qs.forEach(q=>{n++;lines.push(`${n}. ${q.q}`);lines.push((S.answers[q.k]||"(not answered)").trim())});lines.push("")});
+  return lines.join("\n");
+}
+function showFinal(){
+  $("promptBox").hidden=true;$("final").hidden=false;
+  const p=phases(),r=v=>v==null?"—":Math.round(v).toLocaleString()+" lux";
+  const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  $("reportOut").innerHTML=`<span class="muted">Flat ${r(p.flat)} · Halfway ${r(p.half)} · Almost sideways ${r(p.side)}</span>`+
+    (()=>{let n=0;return cerGroups().map(([h,qs])=>`<p class="cer-h">${h}</p>`+qs.map(q=>{n++;return `<h4>${n}. ${esc(q.q)}</h4>${esc((S.answers[q.k]||"Not answered yet.").trim())}`}).join("")).join("")})();
+  if(window.LabKit)LabKit.submit({prediction:(PRED.find(x=>x.k===S.prediction)||{}).t||S.prediction,answers:S.answers,phases:p,findings:findingsRows(),
+    source:S.sample?"sample":S.mode,readings:S.data.length,report:reportText()});
+}
+$("btnEdit").onclick=()=>{S.pIdx=0;renderPrompt()};
+$("btnCopy").onclick=()=>{const t=reportText();
+  navigator.clipboard.writeText(t).then(()=>$("copyMsg").textContent="Report copied. Paste it into your assignment.")
+  .catch(()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();$("copyMsg").textContent="Press Ctrl+C (or Cmd+C) to copy the selected report."})};
+
+/* ---------- voiceover: one neutral voice for every read-aloud ---------- */
+var VO={on:false,voice:null};
+const hasTTS="speechSynthesis" in window&&"SpeechSynthesisUtterance" in window;
+const NEUTRAL=["Microsoft Aria Online (Natural) - English (United States)","Microsoft Jenny Online (Natural) - English (United States)","Microsoft Natasha Online (Natural) - English (Australia)","Google US English","Samantha","Google UK English Female","Karen","Microsoft Zira - English (United States)"];
+function pickVoice(){const vs=speechSynthesis.getVoices();if(!vs.length)return null;
+  for(const n of NEUTRAL){const v=vs.find(x=>x.name===n||x.name.startsWith(n.split(" - ")[0]));if(v)return v}
+  return vs.find(v=>/^en[-_](AU|GB|US)/i.test(v.lang)&&/natural|neural|google/i.test(v.name))||vs.find(v=>/^en[-_](AU|GB|US)/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||vs[0]}
+function stopVO(){if(hasTTS)speechSynthesis.cancel();document.querySelectorAll(".speaking").forEach(e=>e.classList.remove("speaking"))}
+function readEls(els){stopVO();if(!hasTTS)return;
+  els.filter(e=>e&&e.offsetParent&&e.textContent.trim()).forEach(e=>{
+    const u=new SpeechSynthesisUtterance(e.textContent.replace(/\s+/g," ").replace(/°/g," degrees").trim());
+    if(VO.voice){u.voice=VO.voice;u.lang=VO.voice.lang}else u.lang="en-AU";u.rate=.95;u.pitch=1;
+    u.onstart=()=>{document.querySelectorAll(".speaking").forEach(x=>x.classList.remove("speaking"));e.classList.add("speaking");e.scrollIntoView({block:"nearest",behavior:"smooth"})};
+    u.onend=u.onerror=()=>e.classList.remove("speaking");speechSynthesis.speak(u)})}
+function readStage(i){const s=document.querySelector(`section[data-step="${i}"]`);
+  const els=[...s.querySelectorAll("h2,p,ol.how li,.choice b,.choice small")].filter(e=>!e.matches(".eyebrow,.msg,.scrub-text,#copyMsg")&&!e.closest(".report-out,.tbl,.nav"));
+  if(i===5){readEls([s.querySelector("h2"),$("pTag"),$("pQ"),$("pHelp"),$("pHint")]);return}
+  readEls(els)}
+if(hasTTS){
+  VO.voice=pickVoice();try{speechSynthesis.addEventListener("voiceschanged",()=>{VO.voice=pickVoice()})}catch(e){}
+  $("btnVO").hidden=false;
+  $("btnVO").onclick=()=>{VO.on=!VO.on;$("btnVO").setAttribute("aria-pressed",VO.on);$("btnVOL").textContent=VO.on?"Reading aloud":"Read aloud";
+    if(VO.on)readStage(S.step);else stopVO()};
+  document.querySelectorAll("section[data-step] h2").forEach(h=>{const b=document.createElement("button");b.type="button";b.className="listen";
+    b.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Listen';
+    b.setAttribute("aria-label","Listen to this step");b.onclick=()=>readStage(+h.closest("section").dataset.step);h.parentNode.insertBefore(b,h)});
+}
+go(0);window.__aisxBooted=true;
+})();
+</script>
+</body></html>

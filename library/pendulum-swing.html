@@ -1,0 +1,597 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pendulum Swing</title><style>body{margin:0}[hidden]{display:none!important}
+
+/* Layout: one centred lab-bench column; stepper on top, each step is a "station" with a live instrument panel */
+:root{
+  --bg:#f6f8fb; --panel:#ffffff; --ink:#14213a; --muted:#5b6780; --line:#dbe2ec;
+  --sun:#e8890c; --sun-ink:#9a5200; --sun-soft:#fdebd0; --teal:#14897c; --teal-soft:#d6efeb;
+  --violet:#7a3fc4; --violet-soft:#ece2f8; --go:#1f5fd6; --err:#b3361e;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif;
+  --f-data:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1424; --panel:#161e33; --ink:#e8edf7; --muted:#9aa6bf; --line:#2a3550;
+  --sun:#f5a13a; --sun-ink:#f5a13a; --sun-soft:#3a2a12; --teal:#3cc1b0; --teal-soft:#123532;
+  --violet:#b48af0; --violet-soft:#2b1f44; --go:#6c9cff; --err:#ff8a70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1424; --panel:#161e33; --ink:#e8edf7; --muted:#9aa6bf; --line:#2a3550;
+  --sun:#f5a13a; --sun-ink:#f5a13a; --sun-soft:#3a2a12; --teal:#3cc1b0; --teal-soft:#123532;
+  --violet:#b48af0; --violet-soft:#2b1f44; --go:#6c9cff; --err:#ff8a70; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:920px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:3px solid var(--sun)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{font-family:var(--f-display);font-stretch:80%;font-weight:900;font-size:28px;letter-spacing:-.01em;margin:0;text-transform:uppercase}
+.brand svg{flex:none}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{font:700 15px var(--f-body);border-radius:10px;padding:10px 16px;border:2px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--go);outline-offset:2px}
+button.small{padding:6px 12px;font-size:13px;border-width:1.5px;border-color:var(--line)}
+button.primary{background:var(--go);border-color:var(--go);color:#fff}
+button.sun{background:var(--sun);border-color:var(--sun);color:#1b1205}
+button.teal{background:var(--teal);border-color:var(--teal);color:#fff}
+button.violet{background:var(--violet);border-color:var(--violet);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+.stepper{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:16px 0 22px}
+.stepper button{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:6px;font:700 13px var(--f-body);color:var(--muted)}
+.stepper button::before{content:"";height:5px;border-radius:3px;background:var(--line)}
+.stepper button.done::before{background:var(--teal)}
+.stepper button.done{color:var(--ink)}
+.stepper button.current::before{background:var(--go)}
+.stepper button.current{color:var(--go)}
+.stepper button:disabled{cursor:default}
+.stepper button:focus-visible{outline:3px solid var(--go);outline-offset:3px;border-radius:4px}
+.eyebrow{font:700 12px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:var(--sun-ink);margin:0 0 4px}
+h2{font-family:var(--f-display);font-stretch:85%;font-weight:800;font-size:clamp(26px,4vw,36px);line-height:1.1;margin:0 0 10px;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:700;font-size:19px;margin:0 0 8px}
+p{margin:0 0 12px;max-width:65ch}
+.muted{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1.2fr;gap:20px;align-items:start}
+.grid2>*{min-width:0}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}.stepper button{font-size:0}.stepper button.current{font-size:12px}}
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:16px}
+.scene{width:100%;aspect-ratio:480/300;height:auto;display:block;border-radius:12px;max-width:100%}
+.ctrl{display:grid;gap:4px;margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.ctrl output{font-family:var(--f-data);color:var(--sun)}
+input[type=range]{width:100%;accent-color:var(--go);height:28px}
+.readout{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.readout .big{font:800 54px/1 var(--f-display);font-stretch:85%}
+.readout .unit{font:700 20px var(--f-data);color:var(--sun)}
+.meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}
+.meter i{display:block;height:100%;background:var(--sun);transition:width .2s}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.choices{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin:12px 0}
+@media (max-width:560px){.choices{grid-template-columns:1fr}}
+.choice{all:unset;cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center}
+.choice:focus-visible{outline:3px solid var(--go)}
+.choice[aria-pressed=true]{border-color:var(--go);background:color-mix(in srgb,var(--go) 9%,var(--panel))}
+.choice b{display:block}
+.choice small{color:var(--muted)}
+.choice svg{width:72px;height:44px}
+textarea{width:100%;min-height:96px;font:16px/1.5 var(--f-body);color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:10px}
+ol.how{padding-left:22px;margin:0 0 14px}
+ol.how li{margin-bottom:6px;font-weight:700}
+ol.how li span{font-weight:400;color:var(--muted)}
+.status{display:flex;align-items:center;gap:8px;font-weight:700;margin:6px 0 10px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dot.on{background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft)}
+.msg{font-weight:700;color:var(--err);min-height:1.5em;margin:6px 0}
+.rec-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.chart{width:100%;height:auto;display:block}
+.chart-wrap{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:10px 8px 4px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:8px 4px}
+.legend span::before{content:"";display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;background:var(--sun)}
+.legend .lh::before{background:repeating-linear-gradient(90deg,var(--teal) 0 5px,transparent 5px 8px)}
+.legend .ls::before{background:repeating-linear-gradient(90deg,var(--violet) 0 5px,transparent 5px 8px)}
+.scrub-text{font-weight:700;font-variant-numeric:tabular-nums}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+@media (max-width:560px){.phases{grid-template-columns:1fr}}
+.phase{border-radius:12px;padding:12px;border:1.5px solid var(--line);background:var(--panel)}
+.phase .lbl{font:700 12px var(--f-data);letter-spacing:.08em;text-transform:uppercase}
+.phase .v{font:800 30px var(--f-display);font-stretch:85%;font-variant-numeric:tabular-nums}
+.phase .pct{font-family:var(--f-data);font-size:13px;color:var(--muted)}
+.phase.flat .lbl{color:var(--sun)} .phase.half .lbl{color:var(--teal)} .phase.side .lbl{color:var(--violet)}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px;width:100%}
+th,td{padding:4px 10px;border-bottom:1px solid var(--line);text-align:right}
+th{font-family:var(--f-data);font-size:12px;color:var(--muted)}
+.tbl{max-height:260px;overflow:auto;margin-top:8px}
+details summary{cursor:pointer;color:var(--go);font-weight:700;text-decoration:underline}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.pills button{width:40px;height:40px;padding:0;border-radius:50%;border:2px solid var(--teal);color:var(--teal);background:var(--panel);font-family:var(--f-data)}
+.pills button.filled{background:var(--teal-soft)}
+.pills button.cur{background:var(--go);border-color:var(--go);color:#fff}
+.cer{font:700 12px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:var(--sun);margin:0}
+.hint{background:var(--sun-soft);border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0 12px;max-width:none}
+.report-out{white-space:pre-wrap;font-size:15px;line-height:1.6}
+.report-out h4{font-family:var(--f-display);margin:14px 0 4px}
+.tag{display:inline-block;font:700 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--teal-soft);color:var(--teal)}
+.tag.sim{background:var(--sun-soft);color:var(--sun)}
+.ray{stroke-dasharray:6 7;animation:flow 1s linear infinite}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pl 1.1s ease-out infinite}@keyframes pl{from{transform:scale(.6);opacity:1}to{transform:scale(1.8);opacity:0}}
+@keyframes flow{to{stroke-dashoffset:-13}}
+@media (prefers-reduced-motion:reduce){.ray,.pulse{animation:none}.meter i{transition:none}}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---- learning: checkpoints, findings, challenge ---- */
+.checkpoint{border:2px solid var(--sun);background:color-mix(in srgb,var(--sun) 8%,var(--panel));border-radius:14px;padding:14px;margin:12px 0;animation:rise .4s var(--ease) both}
+.checkpoint h3{display:flex;gap:8px;align-items:center;margin:0 0 4px}
+.checkpoint .tagline{font:700 11px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:var(--sun)}
+.findings{width:100%;border-collapse:separate;border-spacing:0;margin-top:8px;font-size:15px}
+.findings th{font:700 11px var(--f-data);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px;border-bottom:1.5px solid var(--line)}
+.findings td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.findings input{width:100%;font:15px var(--f-body);padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.findings input.num{font-family:var(--f-data);max-width:120px}
+.findings input:focus{border-color:var(--go);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--go) 16%,transparent)}
+.challenge{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}
+@media (max-width:640px){.challenge{grid-template-columns:1fr}}
+.target{position:relative;height:16px;border-radius:8px;background:var(--line);overflow:hidden;margin:8px 0}
+.target i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,color-mix(in srgb,var(--sun) 70%,#fff),var(--sun));transition:width .2s}
+.target b{position:absolute;top:-3px;bottom:-3px;width:3px;left:50%;background:var(--ink);border-radius:2px}
+.win{color:var(--teal);font-weight:800;font-family:var(--f-display);font-size:20px}
+/* ---- voiceover ---- */
+button.vo{display:inline-flex;align-items:center;gap:6px}
+button.vo[aria-pressed=true]{background:var(--go);border-color:var(--go);color:#fff}
+.listen{display:inline-flex;align-items:center;gap:6px;font:700 12px var(--f-body);padding:5px 11px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--go);margin:0 0 8px;cursor:pointer}
+.speaking{background:color-mix(in srgb,var(--sun) 22%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--sun) 22%,transparent);border-radius:6px;transition:background-color .25s,box-shadow .25s}
+/* ---- polish layer: depth, motion, type ---- */
+:root{--sh1:0 1px 2px rgba(20,33,58,.05),0 3px 8px -2px rgba(20,33,58,.07);--sh2:0 2px 4px rgba(20,33,58,.05),0 18px 36px -12px rgba(20,33,58,.24);--hl:rgba(255,255,255,.75);--ease:cubic-bezier(.2,.8,.2,1)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sh1:0 1px 2px rgba(0,0,0,.4),0 4px 10px -2px rgba(0,0,0,.35);--sh2:0 2px 6px rgba(0,0,0,.45),0 22px 40px -12px rgba(0,0,0,.6);--hl:rgba(255,255,255,.05)}}
+:root[data-theme="dark"]{--sh1:0 1px 2px rgba(0,0,0,.4),0 4px 10px -2px rgba(0,0,0,.35);--sh2:0 2px 6px rgba(0,0,0,.45),0 22px 40px -12px rgba(0,0,0,.6);--hl:rgba(255,255,255,.05)}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:"kern","liga"}
+h2{letter-spacing:-.02em;line-height:1.04}
+p{text-wrap:pretty}
+.eyebrow{display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:16px;height:2px;border-radius:2px;background:currentColor}
+.panel,.chart-wrap{background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 95%,var(--line)));border-color:color-mix(in srgb,var(--line) 70%,transparent);box-shadow:var(--sh1),inset 0 1px 0 var(--hl)}
+.choice,.phase{box-shadow:var(--sh1);transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s,background-color .2s}
+.choice:hover,.phase:hover{transform:translateY(-3px);box-shadow:var(--sh2)}
+.choice[aria-pressed=true]{box-shadow:0 0 0 4px color-mix(in srgb,var(--go) 18%,transparent),var(--sh2)}
+.choice svg path{stroke-dasharray:200;stroke-dashoffset:0;transition:stroke-dashoffset .6s var(--ease)}
+.choice:hover svg path{animation:draw .8s var(--ease)}
+@keyframes draw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+.phase .v{letter-spacing:-.02em}
+.readout .big{letter-spacing:-.03em}
+button{transition:transform .18s var(--ease),box-shadow .18s var(--ease),background-color .2s,border-color .2s,color .2s}
+button:not(:disabled):hover{transform:translateY(-1px);box-shadow:var(--sh1)}
+button:not(:disabled):active{transform:translateY(0) scale(.97);box-shadow:none}
+button.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--go) 86%,#fff),var(--go));box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 6px 14px -6px color-mix(in srgb,var(--go) 70%,transparent)}
+button.sun{background:linear-gradient(180deg,color-mix(in srgb,var(--sun) 84%,#fff),var(--sun));box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 6px 14px -6px color-mix(in srgb,var(--sun) 75%,transparent)}
+button.teal{background:linear-gradient(180deg,color-mix(in srgb,var(--teal) 86%,#fff),var(--teal))}
+button.violet{background:linear-gradient(180deg,color-mix(in srgb,var(--violet) 86%,#fff),var(--violet))}
+.stepper button::before{transition:background-color .4s var(--ease),transform .4s var(--ease);transform-origin:left}
+.stepper button.current::before{box-shadow:0 0 0 3px color-mix(in srgb,var(--go) 18%,transparent)}
+.stepper button:not(:disabled):hover{color:var(--ink)}
+.pills button{transition:transform .2s var(--ease),background-color .2s,box-shadow .2s}
+.pills button:hover{transform:scale(1.08)}
+.pills button.cur{box-shadow:0 0 0 4px color-mix(in srgb,var(--go) 22%,transparent)}
+textarea{transition:border-color .2s,box-shadow .2s}
+textarea:focus{border-color:var(--go);box-shadow:0 0 0 4px color-mix(in srgb,var(--go) 16%,transparent);outline:none}
+.meter{box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+.meter i{background:linear-gradient(90deg,color-mix(in srgb,var(--sun) 70%,#fff),var(--sun));transition:width .35s var(--ease)}
+.hint{border:1px solid color-mix(in srgb,var(--sun) 30%,transparent)}
+section[data-step]:not([hidden]){animation:rise .5s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.scene{box-shadow:0 20px 40px -18px rgba(7,12,29,.55)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* Prediction check */
+.pc{margin:6px 0 16px;border-width:2px}
+.pc.ok{border-color:var(--teal);background:linear-gradient(180deg,var(--teal-soft),var(--panel) 70%)}
+.pc.no{border-color:var(--violet);background:linear-gradient(180deg,var(--violet-soft),var(--panel) 70%)}
+.pc h3{margin:2px 0 12px;font-size:20px;text-wrap:balance}
+.pc-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.pc figure{margin:0;flex:1 1 180px;min-width:0;display:grid;gap:4px;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.pc figcaption{font:700 11px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pc svg{width:100%;max-width:150px;height:auto}
+.pc-pred{fill:none;stroke:var(--sun);stroke-width:3;stroke-linecap:round;stroke-dasharray:5 4}
+.pc-data{fill:none;stroke:var(--go);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.pc-vs{font:800 30px var(--f-display,inherit);color:var(--muted)}
+.pc.ok .pc-vs{color:var(--teal)}.pc.no .pc-vs{color:var(--violet)}
+.pc-msg{margin:12px 0 8px}
+.pc-q{display:block;font-weight:700;margin:4px 0 6px}
+.pc textarea{width:100%;box-sizing:border-box}
+
+/* Report check */
+.rc{border-width:2px;border-color:var(--go)}
+.rc h3{margin:2px 0 10px;outline:none}
+.rc-list{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}
+.rc-list li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--panel);border:1.5px solid var(--line)}
+.rc-list li.ok{background:var(--teal-soft);border-color:transparent}
+.rc-list li.todo{background:var(--sun-soft);border-color:transparent}
+.rc-i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--panel)}
+.rc-list li.ok .rc-i{color:var(--teal)}
+.rc-list li.todo .rc-i{color:var(--sun-ink)}
+.rc-list button{margin-left:4px}
+</style></head><body><script type="application/json" id="labkit-marking">{"iv":"the string length","dv":"the period","unit":"s","idea":"the longer path the bob travels and its gentler slope","data":"phases","questions":[{"k":"claim","part":"claim","model":"The longer the pendulum, the longer its period, but doubling the length does not double the period.","ideas":["length|long|string","period|slow|time|take|increase|more|bigger"],"wrong":["no effect","does not change","doesn't change","stays the same","shorter period","decreas"],"q":"How does the length of a pendulum affect its period?"},{"k":"ev1","part":"evidence","model":"The 20 cm pendulum took about 0.9 s and the 100 cm pendulum about 2.0 s.","numbers":2,"q":"What were your shortest and longest periods?"},{"k":"ev2","part":"evidence","model":"No. 20 cm took 0.9 s and 40 cm took 1.27 s, about 1.4 times longer, not twice.","numbers":2,"ideas":["double|twice|times","no|not|less than|doesn't|does not"],"q":"Did doubling the length double the period?"},{"k":"mass","part":"other","model":"No. The period stayed the same when I made the bob heavier, so mass does not affect it.","ideas":["mass|heavy|weight|bob|light","no|not|didn't|same|doesn't|no effect"],"q":"Did the mass of the bob change the period? How do you know?"},{"k":"why","part":"reasoning","model":"A longer pendulum swings through a longer arc and its path is less steep, so gravity speeds it up more slowly and each swing takes longer.","ideas":["distance|further|path|travel|arc|long way","steep|gravity|pull|slope|gentle|speed"],"because":true,"q":"Why does a longer pendulum take longer to swing?"},{"k":"clock","part":"other","model":"A 1 m pendulum takes about 1 second for each half swing, so it can tick once every second.","ideas":["second|tick|time|period|accurate"],"q":"A grandfather clock pendulum is about 1 m long. Why do clockmakers use that length?"},{"k":"error","part":"other","model":"My reaction time when starting and stopping the timer; timing 10 swings and dividing by 10 made that error smaller.","ideas":["reaction|timing|stopwatch|ten swings|10 swings|average|divide|human|start|stop"],"q":"What could make your measurements less accurate, and how did timing 10 swings help?"}]}</script><script>window.EXP={
+key:"pendulum-swing",title:"Pendulum Swing",year:"Year 10",
+logo:'<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="var(--sun-soft)"/><path d="M12 8h16" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M20 8L27 27" stroke="var(--ink)" stroke-width="2"/><circle cx="27.5" cy="28.5" r="5" fill="var(--sun)"/></svg>',
+hookTitle:"Why does a grandfather clock need such a long pendulum?",
+hook:["A pendulum swings back and forth with an almost perfect rhythm. That rhythm is called the <b>period</b>: the time for one full swing there and back.","In this experiment you'll find out what sets the period. Is it the length of the string, the mass of the bob, or both?"],
+tryIt:"Drag the bob up or down to change the string length, and change the mass. Watch the period.",
+sceneLabel:"A pendulum swinging from a stand. Drag the bob to change the string length.",
+predictQ:"How will the period change as you make the string longer?",
+iv:{name:"String length",short:"string length",unit:"cm",min:10,max:100,step:1,default:40,decimals:0},
+dv:{name:"Period",unit:"s",decimals:2},
+extras:[{id:"mass",name:"Bob mass",unit:"g",min:50,max:500,step:10,default:100,decimals:0}],
+model:(L)=>2*Math.PI*Math.sqrt(L/100/9.81),
+modelText:"T = 2π√(L ÷ g)",noise:0.015,
+conditions:[20,40,60,80,100],
+trial:{seconds:6,label:(t,p)=>p<1?`Timing 10 swings… ${(t*1.7).toFixed(1)} s on the stopwatch`:"Done",live:(iv,p)=>2*Math.PI*Math.sqrt(iv/100/9.81)*Math.min(1,p)},
+predictions:[
+ {k:"same",shape:"flat",t:"Stays the same",d:"Length doesn't matter.",p:"M6 22 L66 22"},
+ {k:"line",shape:"up-line",t:"Goes up in a straight line",d:"Double the length, double the period.",p:"M6 38 L66 8"},
+ {k:"curve",shape:"up-curve",t:"Goes up, but less and less",d:"Long strings add less extra time.",p:"M6 38 C 22 18, 40 12, 66 8"},
+ {k:"down",shape:"down",t:"Goes down",d:"Longer strings swing faster.",p:"M6 8 L66 38"}],
+checkpoints:[
+ {after:0,key:"notice1",q:"You timed the shortest pendulum. What do you notice about how fast it swings?",hint:"Fast or slow? Count along with it."},
+ {after:2,key:"notice2",q:"Halfway through. How has the period changed as the string got longer?",hint:"Look at the dots on the graph. Straight line or curve?"},
+ {after:4,key:"notice3",q:"All trials done. Did doubling the length double the period? What do you wonder?",hint:"Compare 20 cm with 40 cm, and 40 cm with 80 cm."}],
+challenge:{title:"Build a one-second pendulum",text:"Find the string length that gives a period of exactly 1.00 second. Guess first, then test it.",target:1.0,tolerance:0.012,why:"Why isn't the answer simply 50 cm? Use your graph."},
+setup:{equipment:["String (about 1.2 m)","Metal washers or a bob","Retort stand and clamp","Ruler or tape measure","Stopwatch or phone timer"],
+ steps:["Tie the bob to the string and clamp it so the length (pivot to the middle of the bob) is 20 cm.","Pull the bob to the side about 10° and let go. Don't push it.","Time 10 full swings and divide by 10 to get the period.","Repeat for 40, 60, 80 and 100 cm. Keep the angle and the bob the same."],
+ safety:"Keep swinging bobs away from faces. Clamp the stand to the bench."},
+cer:[
+ {k:"claim",tag:"CER: Claim",q:"How does the length of a pendulum affect its period?",help:"One clear sentence."},
+ {k:"ev1",tag:"CER: Evidence",q:"What were your shortest and longest periods?",help:"Use numbers from your findings table.",hint:(S,f)=>{const t=S.trials.filter(r=>r.dv!=null);return t.length?`Your data: ${f(t[0].iv,0)} cm → ${f(t[0].dv,2)} s, ${f(t[t.length-1].iv,0)} cm → ${f(t[t.length-1].dv,2)} s.`:null}},
+ {k:"ev2",tag:"CER: Evidence",q:"Did doubling the length double the period?",help:"Compare two pairs of results, for example 20 cm and 40 cm."},
+ {k:"mass",tag:"Test an idea",q:"Did the mass of the bob change the period? How do you know?",help:"Try the mass slider in Get started, or test it for real."},
+ {k:"why",tag:"CER: Reasoning",q:"Why does a longer pendulum take longer to swing?",help:"Think about the distance the bob travels and how steep its path is."},
+ {k:"clock",tag:"Connect",q:"A grandfather clock pendulum is about 1 m long. Why do clockmakers use that length?",help:"Use your graph or the model."},
+ {k:"error",tag:"Evaluate",q:"What could make your measurements less accurate, and how did timing 10 swings help?",help:"Think about reaction time."}],
+dragToIv:(p)=>(p.y-34)/2.4,
+draw(c,o){const L=o.iv,px=34+L*2.4,T=o.value,g=o.st;g.t=(g.t||0)+o.dt*(o.run?1.4:1);g.trail=g.trail||[];
+ const th=(o.reduce?0.32:0.38*Math.cos(2*Math.PI*g.t/T)),x=240+px*Math.sin(th),y=24+px*Math.cos(th),r=7+Math.sqrt(o.ex.mass||100)*0.75;
+ let gr=c.createLinearGradient(0,0,0,300);gr.addColorStop(0,"#0a1124");gr.addColorStop(1,"#141f3d");c.fillStyle=gr;c.fillRect(0,0,480,300);
+ c.fillStyle="#1d2850";c.fillRect(0,282,480,18);
+ c.fillStyle="#3a4670";c.fillRect(150,14,180,10);c.fillRect(326,14,8,270);
+ c.strokeStyle="rgba(127,176,255,.35)";c.setLineDash([3,4]);c.beginPath();c.arc(240,24,60,Math.PI/2-.45,Math.PI/2+.45);c.stroke();c.setLineDash([]);
+ c.beginPath();c.moveTo(240,24);c.lineTo(240,24+px+16);c.strokeStyle="rgba(127,176,255,.18)";c.stroke();
+ if(!o.reduce){g.trail.push([x,y]);if(g.trail.length>26)g.trail.shift();g.trail.forEach((q,i)=>{c.fillStyle=`rgba(255,200,97,${i/g.trail.length*.35})`;c.beginPath();c.arc(q[0],q[1],r*i/g.trail.length,0,7);c.fill()})}
+ c.strokeStyle="#cfd8ee";c.lineWidth=1.6;c.beginPath();c.moveTo(240,24);c.lineTo(x,y);c.stroke();
+ c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(x,286,r*1.4,3.5,0,0,7);c.fill();
+ c.shadowColor="#ffc861";c.shadowBlur=18;const bg=c.createRadialGradient(x-r/3,y-r/3,1,x,y,r);bg.addColorStop(0,"#fff1c9");bg.addColorStop(1,"#e08a12");c.fillStyle=bg;c.beginPath();c.arc(x,y,r,0,7);c.fill();c.shadowBlur=0;
+ c.fillStyle="#ffffff";c.beginPath();c.arc(240,24,4,0,7);c.fill();
+ c.strokeStyle="rgba(127,176,255,.6)";c.beginPath();c.moveTo(352,24);c.lineTo(352,24+px);c.stroke();[24,24+px].forEach(yy=>{c.beginPath();c.moveTo(346,yy);c.lineTo(358,yy);c.stroke()});
+ c.fillStyle="#9fb0d6";c.font="700 11px JetBrains Mono, monospace";c.textAlign="left";c.fillText(L+" cm",362,24+px/2+4);
+ c.fillText("PERIOD",16,30);c.fillStyle="#fff";c.font="800 24px Archivo, sans-serif";c.fillText(T.toFixed(2)+" s",16,56);
+ c.fillStyle="#9fb0d6";c.font="600 11px Atkinson Hyperlegible, sans-serif";c.fillText("Mass "+(o.ex.mass||100)+" g",16,76);
+ c.textAlign="right";c.fillText("A grandfather clock pendulum",470,250);c.fillStyle="#fff";c.font="700 12px Atkinson Hyperlegible, sans-serif";c.fillText("99 cm long · 2.0 s per swing",470,266);
+ if(o.hint&&!o.run){c.fillStyle="#bcd3ff";c.font="600 12px Atkinson Hyperlegible, sans-serif";c.textAlign="left";c.fillText("Drag the bob",x+r+8,y+4);
+  c.strokeStyle=`rgba(127,176,255,${.5+.5*Math.sin(o.t/260)})`;c.lineWidth=2;c.beginPath();c.arc(x,y,r+6+2*Math.sin(o.t/260),0,7);c.stroke()}}
+};
+</script><script>/* AI Science Experiment library engine: six-stage, trial-based inquiry experiment.
+   Each experiment supplies window.EXP (config, model and canvas scene). */
+(function(){
+const E=window.EXP,$=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg";
+const STEPS=["Get started","Predict","Set up","Collect","Analyze","Report"];
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const S={step:0,max:0,iv:E.iv.default,ex:{},mode:"sim",trials:[],answers:{},prediction:null,auto:false,paused:false,speed:1,
+  running:null,cp:{},clock:0,pIdx:0};
+(E.extras||[]).forEach(x=>S.ex[x.id]=x.default);
+const fmt=(v,d)=>v==null||isNaN(v)?"—":(+v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+const model=(iv,ex)=>E.model(iv,ex||S.ex);
+const noisy=v=>v*(1+(Math.random()-.5)*2*(E.noise||0.02));
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LK=()=>window.LabKit||null;
+const save=(k,v)=>{S.answers[k]=v;if(window.LabKit)LabKit.saveResponse(k,v)};
+
+/* ---------- build the page ---------- */
+function html(){
+  const ex=(E.extras||[]).map(x=>`<div class="ctrl"><label for="x_${x.id}">${esc(x.name)} <output id="x_${x.id}o"></output></label><input type="range" id="x_${x.id}" min="${x.min}" max="${x.max}" step="${x.step}" value="${x.default}"></div>`).join("");
+  return `
+<div class="wrap">
+ <header class="top"><div class="brand">${E.logo||""}<h1>${esc(E.title)}</h1></div>
+  <div class="top-actions"><span id="modeTag" class="tag sim">Simulation</span><button class="small vo" id="btnVO" aria-pressed="false" hidden>${spk(16)}<span id="btnVOL">Read aloud</span></button><button class="small" id="btnRestart">Start over</button></div></header>
+ <nav class="stepper" id="stepper" aria-label="Experiment steps"></nav>
+
+ <section data-step="0" data-stage="1">
+  <div class="grid2"><div>
+   <p class="eyebrow">Step 1 · Get started</p><h2>${esc(E.hookTitle)}</h2>
+   ${E.hook.map(p=>`<p>${p}</p>`).join("")}
+   <p class="muted">Try it first. ${esc(E.tryIt)}</p>
+  </div><div class="panel">
+   <canvas class="scene" id="scene" role="img" aria-label="${esc(E.sceneLabel)}"></canvas>
+   <div class="readout" aria-live="polite"><span class="big" id="rd0">0</span><span class="unit">${esc(E.dv.unit)}</span></div>
+   <p class="muted" style="font-size:13px;margin:2px 0 0">${esc(E.dv.name)}</p>
+   <div class="ctrl"><label for="iv0">${esc(E.iv.name)} <output id="iv0o"></output></label><input type="range" id="iv0" min="${E.iv.min}" max="${E.iv.max}" step="${E.iv.step}" value="${E.iv.default}"></div>
+   ${ex}
+  </div></div>
+  <div class="nav"><span></span><button class="primary" data-go="1">Next: Predict</button></div>
+ </section>
+
+ <section data-step="1" data-stage="2" hidden>
+  <p class="eyebrow">Step 2 · Predict</p><h2>${esc(E.predictQ)}</h2>
+  <p class="muted">Pick the graph shape you expect. There's no wrong answer yet; you'll test it.</p>
+  <div class="choices" id="choices"></div>
+  <label for="predWhy"><b>Why do you think that?</b> <span class="muted">Start with "I think… because…"</span></label>
+  <textarea id="predWhy" placeholder="I think… because…"></textarea>
+  <div class="rec-row" style="margin-top:8px"><button class="small speak" data-for="predWhy">Speak my answer</button></div>
+  <div class="nav"><button data-go="0">Back</button><button class="primary" data-go="2" id="toSetup" disabled>Next: Set up</button></div>
+ </section>
+
+ <section data-step="2" data-stage="3" hidden>
+  <p class="eyebrow">Step 3 · Set up</p><h2>How will you get your data?</h2>
+  <div class="choices" style="grid-template-columns:1fr 1fr">
+   <button class="choice" id="pickSim" aria-pressed="true" style="grid-template-columns:1fr"><span><b>Use the simulation</b><small>Run each trial on screen. Change the variable, watch it happen, record the result.</small></span></button>
+   <button class="choice" id="pickReal" aria-pressed="false" style="grid-template-columns:1fr"><span><b>Measure for real</b><small>Do it with real equipment and type your measurements into the findings table.</small></span></button>
+  </div>
+  <div class="panel"><h3>Real equipment</h3><ul>${E.setup.equipment.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+   <h3>Steps</h3><ol class="how">${E.setup.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+   ${E.setup.safety?`<p class="hint"><b>Safety:</b> ${esc(E.setup.safety)}</p>`:""}</div>
+  <div class="nav"><button data-go="1">Back</button><button class="primary" data-go="3">Next: Collect</button></div>
+ </section>
+
+ <section data-step="3" data-stage="4" hidden>
+  <p class="eyebrow">Step 4 · Collect</p><h2>Run a trial for each ${esc(E.iv.short||E.iv.name.toLowerCase())}</h2>
+  <p class="muted" id="collectHelp"></p>
+  <div class="grid2"><div class="panel">
+    <div class="readout"><span class="big" id="rd3">—</span><span class="unit">${esc(E.dv.unit)}</span></div>
+    <p class="muted" style="font-size:13px;margin:2px 0 8px" id="trialInfo">Set the ${esc(E.iv.short||E.iv.name.toLowerCase())}, then run a trial.</p>
+    <div class="ctrl"><label for="iv3">${esc(E.iv.name)} <output id="iv3o"></output></label><input type="range" id="iv3" min="${E.iv.min}" max="${E.iv.max}" step="${E.iv.step}" value="${E.iv.default}"></div>
+    <div class="rec-row"><button class="sun" id="btnTrial">Run trial</button><button class="primary" id="btnAuto">Autoplay all trials</button>
+     <label class="muted" for="autoSpeed" style="font-size:14px;align-self:center">Speed</label><select id="autoSpeed" style="font:700 14px var(--f-body);border-radius:8px;padding:6px"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></div>
+    <div class="meter"><i id="trialBar" style="width:0%"></i></div>
+    <div id="cpHolder"></div>
+  </div><div class="panel"><canvas class="scene" id="scene3" role="img" aria-label="${esc(E.sceneLabel)}"></canvas></div></div>
+  <div class="chart-wrap" style="margin-top:16px"><svg class="chart" id="chart3" viewBox="0 0 760 330"></svg></div>
+  <div class="panel" style="margin-top:16px"><h3>My findings</h3>
+   <p class="muted" style="font-size:14px;margin-bottom:4px">Each trial adds a row. If you measured for real, type your own numbers.</p>
+   <div style="overflow-x:auto"><table class="findings" id="findings"><thead><tr><th>${esc(E.iv.name)} (${esc(E.iv.unit)})</th><th>${esc(E.dv.name)} (${esc(E.dv.unit)})</th><th>What I noticed</th></tr></thead><tbody></tbody></table></div>
+   <div class="rec-row" style="margin-top:8px"><button class="small" id="addRow">Add a row</button></div>
+  </div>
+  <div class="nav"><button data-go="2">Back</button><button class="primary" data-go="4" id="toAnalyze" disabled>Next: Analyze</button></div>
+ </section>
+
+ <section data-step="4" data-stage="5" hidden>
+  <p class="eyebrow">Step 5 · Analyze</p><h2>What pattern does your data show?</h2>
+  <div class="chart-wrap"><svg class="chart" id="chart4" viewBox="0 0 760 330"></svg></div>
+  <div class="ctrl"><label for="scrub" class="sr">Move along your results</label><input type="range" id="scrub" min="0" max="0" value="0"></div>
+  <p class="scrub-text" id="scrubText"></p>
+  <div class="panel pc" id="predCheck" hidden></div>
+  <div class="rec-row" style="margin:6px 0 14px"><label class="muted" style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="showModel"> Show the science model: <b>${esc(E.modelText)}</b></label></div>
+  <div class="panel" style="margin-bottom:16px"><p class="eyebrow">Challenge</p><h3>${esc(E.challenge.title)}</h3>
+   <p class="muted" style="font-size:14px">${esc(E.challenge.text)}</p>
+   <div class="challenge"><div>
+     <label for="chGuess"><b>My guess</b></label>
+     <div class="rec-row" style="margin:6px 0 12px"><input type="number" id="chGuess" step="any" style="width:110px;font:700 18px var(--f-data);padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)"><span class="muted">${esc(E.iv.unit)}</span></div>
+     <div class="ctrl"><label for="chIv">${esc(E.iv.name)} <output id="chIvO"></output></label><input type="range" id="chIv" min="${E.iv.min}" max="${E.iv.max}" step="${E.iv.step}" value="${E.iv.min}"></div>
+   </div><div>
+     <div class="readout"><span class="big" id="chRd">0</span><span class="unit">${esc(E.dv.unit)}</span></div>
+     <p class="muted" style="font-size:13px;margin:0">Target: <b>${fmt(E.challenge.target,E.dv.decimals)} ${esc(E.dv.unit)}</b></p>
+     <p class="win" id="chWin" aria-live="polite"></p></div></div>
+   <div id="chWhy" hidden><label for="chWhyT"><b>${esc(E.challenge.why)}</b></label><textarea id="chWhyT" rows="2"></textarea></div>
+  </div>
+  <div class="nav"><button data-go="3">Back</button><button class="primary" data-go="5">Next: Report</button></div>
+ </section>
+
+ <section data-step="5" data-stage="6" hidden>
+  <p class="eyebrow">Step 6 · Report</p><h2>Explain your results</h2>
+  <div class="pills" id="pills"></div>
+  <div class="panel" id="promptBox"><p class="cer" id="pTag"></p><h3 id="pQ"></h3><p class="muted" id="pHelp"></p><p class="hint" id="pHint" hidden></p>
+   <label for="pAns" class="sr">Your answer</label><textarea id="pAns" rows="4"></textarea>
+   <div class="rec-row" style="margin:8px 0 0"><button class="small speak" data-for="pAns">Speak my answer</button></div>
+   <div class="nav" style="margin-top:12px"><button id="pPrev">Previous</button><button class="primary" id="pNext">Next question</button></div></div>
+  <div class="panel rc" id="checkBox" hidden></div>
+  <div class="panel" id="final" hidden><h3>My ${esc(E.title)} report</h3><div class="report-out" id="reportOut"></div>
+   <div class="rec-row"><button class="primary" id="btnCopy">Copy report</button><button id="btnEdit">Edit answers</button></div><p class="muted" id="copyMsg" aria-live="polite"></p></div>
+  <div class="nav"><button data-go="4">Back</button><span></span></div>
+ </section>
+</div>`}
+function spk(n){return `<svg width="${n}" height="${n}" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`}
+document.body.insertAdjacentHTML("afterbegin",html());
+
+/* ---------- stepper ---------- */
+function renderStepper(){const el=$("stepper");el.innerHTML="";STEPS.forEach((n,i)=>{const b=document.createElement("button");b.textContent=(i+1)+". "+n;
+  b.className=i===S.step?"current":(i<=S.max?"done":"");b.disabled=i>S.max;if(i===S.step)b.setAttribute("aria-current","step");b.onclick=()=>go(i);el.appendChild(b)})}
+function go(i){if(i>S.max)S.max=i;S.step=i;document.querySelectorAll("section[data-step]").forEach(s=>s.hidden=+s.dataset.step!==i);
+  renderStepper();scrollTo({top:0,behavior:reduce?"auto":"smooth"});
+  const h2=document.querySelector('section[data-step="'+i+'"] h2');if(h2&&window.__aisxBooted){h2.setAttribute("tabindex","-1");h2.style.outline="none";h2.focus({preventScroll:true})};
+  if(i===3){drawChart($("chart3"));renderFindings()}if(i===4)renderAnalyze();if(i===5)renderPrompt();
+  if(window.LabKit)LabKit.progress({stage:i+1,name:STEPS[i],readings:S.trials.filter(r=>r.dv!=null).length});stopVO();if(VO.on)setTimeout(()=>readStage(i),450)}
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+$("btnRestart").onclick=()=>{S.trials=[];S.answers={};S.prediction=null;S.cp={};S.max=0;$("predWhy").value="";renderChoices();renderFindings();go(0)};
+
+/* ---------- canvas scene host ---------- */
+class Scene{constructor(cv,mode){this.cv=cv;this.mode=mode;this.c=cv.getContext("2d");this.hint=true;this.drag=false;this.last=performance.now();this.st={};
+  const fit=()=>{const r=cv.getBoundingClientRect();if(!r.width)return;const d=Math.min(2,devicePixelRatio||1);cv.width=Math.round(r.width*d);cv.height=Math.round(r.width*300/480*d);this.k=cv.width/480};
+  this.fit=fit;fit();try{new ResizeObserver(fit).observe(cv)}catch(e){}
+  const pt=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*480,y:(e.clientY-r.top)/r.height*300}};
+  const set=e=>{const v=E.dragToIv(pt(e),this.st);if(v!=null)setIv(v,this.mode)};
+  cv.addEventListener("pointerdown",e=>{if(this.mode==="collect"&&S.running)return;this.drag=true;this.hint=false;cv.setPointerCapture(e.pointerId);set(e)});
+  cv.addEventListener("pointermove",e=>{if(this.drag)set(e)});const up=()=>this.drag=false;cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+  cv.style.touchAction="none";cv.style.cursor="grab";
+  const loop=t=>{try{this.frame(t)}catch(e){console.error(e)}requestAnimationFrame(loop)};requestAnimationFrame(loop)}
+ frame(t){if(!this.cv.offsetParent)return;if(!this.k)this.fit();if(!this.k)return;const dt=Math.min(.05,(t-this.last)/1000);this.last=t;
+  const c=this.c;c.setTransform(this.k,0,0,this.k,0,0);
+  const run=this.mode==="collect"?S.running:null;
+  E.draw(c,{t,dt,iv:this.mode==="collect"?+$("iv3").value:S.iv,ex:S.ex,reduce,hint:this.hint,run,progress:run?run.p:0,st:this.st,value:model(this.mode==="collect"?+$("iv3").value:S.iv)})}}
+const sc0=new Scene($("scene"),"explore"),sc3=new Scene($("scene3"),"collect");
+
+/* ---------- explore ---------- */
+function tween(e,target,d){e._t=target;e._d=d;if(e._raf)return;const step=()=>{const v=e._v??e._t,n=v+(e._t-v)*0.2;e._v=Math.abs(e._t-n)<Math.pow(10,-(e._d||0))/2?e._t:n;
+  e.textContent=fmt(e._v,e._d);e._raf=e._v===e._t?null:requestAnimationFrame(step)};e._raf=requestAnimationFrame(step)}
+function setIv(v,where){v=Math.max(E.iv.min,Math.min(E.iv.max,Math.round(v/E.iv.step)*E.iv.step));
+  if(where==="collect"){$("iv3").value=v;upd3()}else{S.iv=v;$("iv0").value=v;upd0()}}
+function upd0(){S.iv=+$("iv0").value;$("iv0o").textContent=fmt(S.iv,E.iv.decimals||0)+" "+E.iv.unit;
+  (E.extras||[]).forEach(x=>{S.ex[x.id]=+$("x_"+x.id).value;$("x_"+x.id+"o").textContent=fmt(S.ex[x.id],x.decimals||0)+" "+x.unit});
+  tween($("rd0"),model(S.iv),E.dv.decimals)}
+$("iv0").oninput=upd0;(E.extras||[]).forEach(x=>$("x_"+x.id).oninput=upd0);upd0();
+function upd3(){$("iv3o").textContent=fmt(+$("iv3").value,E.iv.decimals||0)+" "+E.iv.unit;if(!S.running)tween($("rd3"),model(+$("iv3").value),E.dv.decimals)}
+$("iv3").oninput=upd3;upd3();
+
+/* ---------- predict ---------- */
+function renderChoices(){const c=$("choices");c.innerHTML="";E.predictions.forEach(o=>{const b=document.createElement("button");b.className="choice";b.setAttribute("aria-pressed",S.prediction===o.k);
+  b.innerHTML=`<svg viewBox="0 0 72 44" aria-hidden="true"><rect x="1" y="1" width="70" height="42" rx="6" fill="none" stroke="var(--line)"/><path d="${o.p}" fill="none" stroke="var(--sun)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><span><b>${esc(o.t)}</b><small>${esc(o.d)}</small></span>`;
+  b.onclick=()=>{S.prediction=o.k;save("prediction",o.t);renderChoices()};c.appendChild(b)});$("toSetup").disabled=!S.prediction}
+renderChoices();$("predWhy").oninput=e=>save("prediction_why",e.target.value);
+
+/* ---------- set up ---------- */
+function setMode(m){S.mode=m;$("pickSim").setAttribute("aria-pressed",m==="sim");$("pickReal").setAttribute("aria-pressed",m==="manual");
+  $("modeTag").textContent=m==="sim"?"Simulation":"Real measurements";
+  $("collectHelp").textContent=m==="sim"?`Set the ${E.iv.short||E.iv.name.toLowerCase()} with the slider or by dragging, then press Run trial. Or press Autoplay to run every trial while you take notes.`:
+    `Do each trial with real equipment and type your measurement into the findings table. You can still run the simulation to compare.`;
+  if(m==="manual"&&!S.trials.length){E.conditions.forEach(v=>S.trials.push({iv:v,dv:null,note:"",manual:true}));renderFindings()}}
+$("pickSim").onclick=()=>setMode("sim");$("pickReal").onclick=()=>setMode("manual");setMode("sim");
+
+/* ---------- collect: trials, autoplay, checkpoints ---------- */
+function runTrial(iv){return new Promise(res=>{const dur=E.trial.seconds;S.running={iv,p:0,t:0};$("btnTrial").disabled=true;
+  const t0=performance.now();let last=t0;
+  const step=now=>{if(!S.running)return res(null);const d=(now-last)/1000;last=now;if(!S.paused)S.running.t+=d*(S.auto?S.speed:1)*(E.trial.rate||1);
+    const p=Math.min(1,S.running.t/dur);S.running.p=p;$("trialBar").style.width=(p*100)+"%";
+    const lab=E.trial.label(S.running.t,p);$("trialInfo").textContent=lab;if(window.LabKit&&Math.floor(S.running.t)!==S.lastSec){S.lastSec=Math.floor(S.running.t);LabKit.time(lab)}
+    tween($("rd3"),E.trial.live?E.trial.live(iv,p,S.ex):model(iv)*p,E.dv.decimals);
+    if(p>=1){const v=noisy(model(iv));S.running=null;$("btnTrial").disabled=false;tween($("rd3"),v,E.dv.decimals);
+      const ex=S.trials.find(r=>r.iv===iv&&!r.manual);if(ex)ex.dv=v;else S.trials.push({iv,dv:v,note:""});
+      S.trials.sort((a,b)=>a.iv-b.iv);drawChart($("chart3"));renderFindings();$("toAnalyze").disabled=S.trials.filter(r=>r.dv!=null).length<3;
+      $("trialInfo").textContent=`Recorded: ${fmt(iv,E.iv.decimals||0)} ${E.iv.unit} → ${fmt(v,E.dv.decimals)} ${E.dv.unit}`;return res(v)}
+    requestAnimationFrame(step)};requestAnimationFrame(step)})}
+$("btnTrial").onclick=()=>{if(!S.running)runTrial(+$("iv3").value)};
+$("autoSpeed").onchange=e=>S.speed=+e.target.value;
+$("btnAuto").onclick=async()=>{if(S.auto){S.paused=!S.paused;updAuto();return}
+  S.auto=true;S.paused=false;S.cp={};updAuto();
+  for(let i=0;i<E.conditions.length&&S.auto;i++){const v=E.conditions[i];await glide(v);await runTrial(v);
+    const cp=E.checkpoints.find(c=>c.after===i);if(cp&&!S.cp[cp.key]){S.cp[cp.key]=1;await checkpoint(cp)}}
+  S.auto=false;S.paused=false;updAuto()};
+function glide(v){return new Promise(res=>{const from=+$("iv3").value,t0=performance.now(),d=reduce?1:600/S.speed;
+  const step=now=>{const k=Math.min(1,(now-t0)/d);$("iv3").value=from+(v-from)*(k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2);upd3();if(k<1)requestAnimationFrame(step);else{$("iv3").value=v;upd3();res()}};requestAnimationFrame(step)})}
+function updAuto(){$("btnAuto").textContent=S.auto?(S.paused?"Resume":"Pause"):"Autoplay all trials";$("btnTrial").disabled=S.auto||!!S.running}
+function checkpoint(cp){return new Promise(res=>{S.paused=true;updAuto();const h=$("cpHolder");
+  h.innerHTML=`<div class="checkpoint" role="group" aria-labelledby="cpq"><span class="tagline">Notice and wonder · paused</span><h3 id="cpq">${esc(cp.q)}</h3><p class="muted" style="font-size:14px;margin:0 0 8px">${esc(cp.hint)}</p>
+   <textarea id="cpA" rows="2" placeholder="I notice… I wonder…"></textarea><div class="rec-row"><button class="primary" id="cpGo">Save and continue</button><button class="small speak" data-for="cpA">Speak</button></div></div>`;
+  bindSpeak(h);h.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});$("cpA").focus({preventScroll:true});if(VO.on)readEls([$("cpq")]);
+  $("cpGo").onclick=()=>{save(cp.key,$("cpA").value.trim());h.innerHTML="";S.paused=false;updAuto();res()}})}
+if(window.LabKit&&LabKit.onControl)LabKit.onControl(cmd=>{if(S.auto||S.running){S.paused=cmd==="pause";updAuto()}});
+
+/* ---------- findings ---------- */
+function renderFindings(){const tb=$("findings").querySelector("tbody");tb.innerHTML=S.trials.map((r,i)=>`<tr><td><input class="num" data-i="${i}" data-f="iv" value="${r.iv??""}" inputmode="decimal" aria-label="${esc(E.iv.name)}"></td><td><input class="num" data-i="${i}" data-f="dv" value="${r.dv==null?"":fmt(r.dv,E.dv.decimals).replace(/,/g,"")}" inputmode="decimal" aria-label="${esc(E.dv.name)}"></td><td><input data-i="${i}" data-f="note" value="${esc(r.note)}" placeholder="I noticed…" aria-label="What I noticed"></td></tr>`).join("");
+  tb.querySelectorAll("input").forEach(inp=>inp.onchange=()=>{const r=S.trials[+inp.dataset.i],f=inp.dataset.f;r[f]=f==="note"?inp.value:(inp.value===""?null:parseFloat(inp.value));
+    save("findings",JSON.stringify(S.trials.map(x=>[x.iv,x.dv,x.note])));drawChart($("chart3"));$("toAnalyze").disabled=S.trials.filter(r=>r.dv!=null).length<3})}
+$("addRow").onclick=()=>{S.trials.push({iv:null,dv:null,note:"",manual:true});renderFindings()};
+
+/* ---------- chart ---------- */
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function nice(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));for(const m of[1,2,2.5,5,10])if(m*p>=v)return m*p}
+function drawChart(svg,o={}){svg.innerHTML="";const W=760,H=330,L=72,R=24,T=24,B=54,pw=W-L-R,ph=H-T-B;
+  const pts=S.trials.filter(r=>r.dv!=null&&r.iv!=null);const ymax=nice(Math.max(model(E.iv.max),...pts.map(p=>p.dv),model(E.iv.min))*1.1);
+  const X=v=>L+(v-E.iv.min)/(E.iv.max-E.iv.min)*pw,Y=v=>T+ph-v/ymax*ph,f={"font-family":"Atkinson Hyperlegible, sans-serif","font-size":13,fill:"var(--muted)"};
+  for(let i=0;i<=5;i++){const v=ymax*i/5;el("line",{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),stroke:"var(--line)"},svg);el("text",{...f,x:L-8,y:Y(v)+4,"text-anchor":"end"},svg).textContent=fmt(v,ymax<10?1:0)}
+  const step=nice((E.iv.max-E.iv.min)/6);for(let v=Math.ceil(E.iv.min/step)*step;v<=E.iv.max+1e-9;v+=step){el("text",{...f,x:X(v),y:T+ph+20,"text-anchor":"middle"},svg).textContent=fmt(v,step<1?1:0)}
+  el("line",{x1:L,x2:L+pw,y1:T+ph,y2:T+ph,stroke:"var(--ink)","stroke-width":1.5},svg);el("line",{x1:L,x2:L,y1:T,y2:T+ph,stroke:"var(--ink)","stroke-width":1.5},svg);
+  el("text",{...f,x:L+pw/2,y:H-8,"text-anchor":"middle","font-weight":700,fill:"var(--ink)"},svg).textContent=`${E.iv.name} (${E.iv.unit})`;
+  el("text",{...f,x:18,y:T+ph/2,"text-anchor":"middle","font-weight":700,fill:"var(--ink)",transform:`rotate(-90 18 ${T+ph/2})`},svg).textContent=`${E.dv.name} (${E.dv.unit})`;
+  if(o.model){let d="";for(let i=0;i<=60;i++){const v=E.iv.min+(E.iv.max-E.iv.min)*i/60;d+=(i?"L":"M")+X(v).toFixed(1)+" "+Y(model(v)).toFixed(1)}el("path",{d,fill:"none",stroke:"var(--violet)","stroke-width":2,"stroke-dasharray":"6 5"},svg)}
+  if(!pts.length){el("text",{...f,x:L+pw/2,y:T+ph/2,"text-anchor":"middle","font-size":15},svg).textContent="Run a trial to see your results here";return{X,Y}}
+  if(pts.length>1)el("path",{d:pts.map((p,i)=>(i?"L":"M")+X(p.iv).toFixed(1)+" "+Y(p.dv).toFixed(1)).join(""),fill:"none",stroke:"var(--sun)","stroke-width":2.5,"stroke-linejoin":"round"},svg);
+  pts.forEach((p,i)=>el("circle",{cx:X(p.iv),cy:Y(p.dv),r:o.sel===i?8:5.5,fill:o.sel===i?"var(--panel)":"var(--sun)",stroke:o.sel===i?"var(--ink)":"var(--panel)","stroke-width":2.5},svg));
+  return{X,Y}}
+
+/* ---------- analyze ---------- */
+/* ---------- prediction check: predict, observe, explain ---------- */
+const SHAPE={flat:"stays about the same","up-line":"goes up steadily","up-curve":"goes up, but less and less",
+  "down-line":"goes down steadily","down-curve":"drops fast, then levels off"};
+function dataPts(){return S.trials.filter(r=>r.dv!=null&&r.iv!=null).slice().sort((a,b)=>a.iv-b.iv)}
+function dataShape(){const p=dataPts();if(p.length<3)return null;const xs=p.map(r=>+r.iv),ys=p.map(r=>+r.dv);
+  const mn=Math.min(...ys),mx=Math.max(...ys),mean=ys.reduce((a,b)=>a+b,0)/ys.length;
+  if((mx-mn)/Math.max(Math.abs(mean),1e-9)<0.12)return "flat";
+  const x0=xs[0],x1=xs[xs.length-1],y0=ys[0],y1=ys[ys.length-1],dir=y1>y0?"up":"down";let dev=0;
+  for(let i=1;i<p.length-1;i++)dev+=ys[i]-(y0+(y1-y0)*(xs[i]-x0)/((x1-x0)||1));
+  dev=dev/(p.length-2)/(Math.abs(y1-y0)||1);
+  return dir+((dir==="up"?dev>0.08:dev<-0.08)?"-curve":"-line")}
+function dataPath(){const p=dataPts();const xs=p.map(r=>+r.iv),ys=p.map(r=>+r.dv);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  return p.map((r,i)=>(i?"L":"M")+(6+60*(r.iv-x0)/((x1-x0)||1)).toFixed(1)+" "+(38-30*(r.dv-y0)/((y1-y0)||1)).toFixed(1)).join(" ")}
+function predMatches(pr,ds){const want=pr.shape||"";return ds===want||ds.split("-")[0]===want}
+function renderPredCheck(){const el=$("predCheck"),ds=dataShape(),pr=E.predictions.find(x=>x.k===S.prediction);
+  if(!el)return;if(!ds||!pr||!pr.shape){el.hidden=true;return}
+  const ok=predMatches(pr,ds);S.answers._predmatch=ok?"yes":"no";S.answers._datashape=SHAPE[ds];
+  if(window.LabKit){LabKit.saveResponse("_predmatch",S.answers._predmatch);LabKit.saveResponse("_datashape",SHAPE[ds])}
+  const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+  el.className="panel pc "+(ok?"ok":"no");el.hidden=false;
+  el.innerHTML=`<p class="eyebrow">Prediction check</p><h3>${ok?"Your evidence backs up your prediction":"Your evidence tells a different story"}</h3>
+   <div class="pc-row"><figure><figcaption>You predicted</figcaption><svg viewBox="0 0 72 44" aria-hidden="true"><path d="${esc(pr.p)}" class="pc-pred"/></svg><b>${esc(pr.t)}</b></figure>
+   <span class="pc-vs" aria-hidden="true">${ok?"=":"≠"}</span>
+   <figure><figcaption>Your data shows</figcaption><svg viewBox="0 0 72 44" aria-hidden="true"><path d="${dataPath()}" class="pc-data"/></svg><b>${esc(cap(SHAPE[ds]))}</b></figure></div>
+   <p class="pc-msg">${ok?"Nice. Now the important part: explain <b>why</b> it happens.":"That's not a mistake, it's science. Scientists change their minds when the evidence disagrees with them."}</p>
+   <label for="pcWhy" class="pc-q">${ok?"What in your data convinced you?":"What surprised you, and what do you think now?"}</label>
+   <textarea id="pcWhy" rows="2" placeholder="${ok?"My data shows…":"I thought… but my data shows… so now I think…"}"></textarea>
+   <button class="small speak" data-for="pcWhy">Speak my answer</button>`;
+  $("pcWhy").value=S.answers.predrethink||"";$("pcWhy").oninput=e=>save("predrethink",e.target.value);bindSpeak(el)}
+function renderAnalyze(){const pts=S.trials.filter(r=>r.dv!=null&&r.iv!=null);const sc=$("scrub");sc.max=Math.max(0,pts.length-1);
+  const upd=()=>{const i=+sc.value,p=pts[i];drawChart($("chart4"),{model:$("showModel").checked,sel:i});
+    $("scrubText").textContent=p?`At ${fmt(p.iv,E.iv.decimals||0)} ${E.iv.unit}, the ${E.dv.name.toLowerCase()} was ${fmt(p.dv,E.dv.decimals)} ${E.dv.unit}`:""};
+  sc.oninput=upd;$("showModel").onchange=upd;upd();renderPredCheck();setTimeout(updCh,0)}
+function updCh(){const v=+$("chIv").value,y=model(v);$("chIvO").textContent=fmt(v,E.iv.decimals||0)+" "+E.iv.unit;tween($("chRd"),y,E.dv.decimals);
+  if(Math.abs(y-E.challenge.target)/E.challenge.target<=E.challenge.tolerance){$("chWin").textContent=`You found it: ${fmt(v,E.iv.decimals||0)} ${E.iv.unit}.`;$("chWhy").hidden=false;
+    if(!S.answers.challenge){save("challenge",fmt(v,E.iv.decimals||0)+" "+E.iv.unit)}}else $("chWin").textContent=""}
+$("chIv").oninput=updCh;$("chGuess").onchange=e=>save("challengeGuess",e.target.value);$("chWhyT").onchange=e=>save("challengeWhy",e.target.value);
+
+/* ---------- report ---------- */
+function phases(){const o={};S.trials.filter(r=>r.dv!=null&&r.iv!=null).forEach(r=>o[fmt(r.iv,E.iv.decimals||0)+" "+E.iv.unit]=+(+r.dv).toFixed(4));return o}
+function renderPrompt(){$("final").hidden=true;$("checkBox").hidden=true;$("promptBox").hidden=false;const pills=$("pills");pills.innerHTML="";
+  E.cer.forEach((p,i)=>{const b=document.createElement("button");b.textContent=i+1;b.setAttribute("aria-label","Question "+(i+1));b.className=(i===S.pIdx?"cur ":"")+((S.answers[p.k]||"").trim()?"filled":"");b.onclick=()=>{S.pIdx=i;renderPrompt()};pills.appendChild(b)});
+  const p=E.cer[S.pIdx];$("pTag").textContent=p.tag;$("pQ").textContent=p.q;$("pHelp").textContent=p.help;const h=p.hint?p.hint(S,fmt):null;$("pHint").hidden=!h;if(h)$("pHint").textContent=h;
+  $("pAns").value=S.answers[p.k]||"";$("pPrev").disabled=S.pIdx===0;$("pNext").textContent=S.pIdx===E.cer.length-1?"Finish report":"Next question";if(VO.on)setTimeout(()=>readEls([$("pTag"),$("pQ"),$("pHelp"),$("pHint")]),200)}
+$("pAns").oninput=()=>save(E.cer[S.pIdx].k,$("pAns").value);
+$("pPrev").onclick=()=>{S.pIdx--;renderPrompt()};$("pNext").onclick=()=>{if(S.pIdx<E.cer.length-1){S.pIdx++;renderPrompt()}else showCheck()};
+/* ---------- report check: feedback before sending ---------- */
+function reportChecks(){const A=k=>(S.answers[k]||"").trim(),words=t=>(t.match(/[\p{L}\p{N}]+/gu)||[]).length;
+  const part=q=>/claim/i.test(q.tag)?"claim":/evidence/i.test(q.tag)?"evidence":/reason/i.test(q.tag)?"reasoning":"other";
+  const first=p=>E.cer.find(q=>part(q)===p),txt=p=>E.cer.filter(q=>part(q)===p).map(q=>A(q.k)).join(" ");const out=[];
+  const cq=first("claim");if(cq){const c=txt("claim").toLowerCase(),iv=(E.iv.short||E.iv.name).toLowerCase(),dv=E.dv.name.toLowerCase();
+    const vars=(iv+" "+dv).match(/\p{L}{4,}/gu)||[];const hit=vars.some(w=>c.includes(w.slice(0,Math.max(4,w.length-2))));
+    out.push({ok:words(c)>=6&&hit,label:"Claim",good:"says how the variables are related.",tip:words(c)<6?"Write your claim as one full sentence.":`Say how the ${iv} changes the ${dv}.`,k:cq.k})}
+  const eq=first("evidence");if(eq){const n=(txt("evidence").match(/\d+(?:[.,]\d+)?/g)||[]).length;
+    out.push({ok:n>=2,label:"Evidence",good:"uses numbers from your own data.",tip:n?"Compare at least two of your results, with units.":`Add numbers from your findings table, with units (${E.dv.unit}).`,k:eq.k})}
+  const rq=first("reasoning");if(rq){const r=txt("reasoning"),link=/\b(because|so|therefore|this means|which means|due to|as a result|since)\b/i.test(r);
+    out.push({ok:words(r)>=12&&link,label:"Reasoning",good:"explains why, not just what.",tip:!link?"Explain why it happens. Try starting with \u201cThis happens because\u2026\u201d":"Add more detail: link your evidence to the science idea.",k:rq.k})}
+  const pr=E.predictions.find(x=>x.k===S.prediction),ds=dataShape();
+  if(pr&&ds&&pr.shape&&!predMatches(pr,ds))out.push({ok:(S.answers.predrethink||"").trim().length>10,label:"Prediction",good:"you explained what changed your mind.",tip:"Your data didn't match your prediction. Say what changed your mind.",go:4});
+  const empty=E.cer.filter(q=>!A(q.k));if(empty.length)out.push({ok:false,label:"Unanswered",tip:`${empty.length} question${empty.length>1?"s are":" is"} still empty.`,k:empty[0].k});
+  return out}
+function showCheck(){const list=reportChecks(),todo=list.filter(c=>!c.ok);
+  if(S.answers._checkfirst==null)save("_checkfirst",String(todo.length));
+  $("promptBox").hidden=true;const box=$("checkBox");box.hidden=false;
+  box.innerHTML=`<p class="eyebrow">Before you send it</p><h3 tabindex="-1">${todo.length?"Make your report even stronger":"Your report is ready to send"}</h3>
+   <ul class="rc-list">${list.map((c,i)=>`<li class="${c.ok?"ok":"todo"}"><span class="rc-i" aria-hidden="true">${c.ok?"✓":"✎"}</span><div><b>${esc(c.label)}</b>${c.ok?": "+esc(c.good):": "+esc(c.tip)+` <button class="small" data-fix="${i}">Fix this</button>`}</div></li>`).join("")}</ul>
+   <div class="nav"><button id="rcBack">Keep improving</button><button class="primary" id="rcSend">${todo.length?"Send it anyway":"Send to my teacher"}</button></div>`;
+  box.querySelectorAll("[data-fix]").forEach(b=>b.onclick=()=>{const c=list[+b.dataset.fix];box.hidden=true;if(c.go!=null){go(c.go);setTimeout(()=>{const t=$("pcWhy");if(t){t.scrollIntoView({block:"center"});t.focus()}},500)}else{S.pIdx=Math.max(0,E.cer.findIndex(q=>q.k===c.k));renderPrompt();$("pAns").focus()}});
+  $("rcBack").onclick=()=>{const c=todo.find(x=>x.k)||{};S.pIdx=c.k?Math.max(0,E.cer.findIndex(q=>q.k===c.k)):0;renderPrompt()};
+  $("rcSend").onclick=()=>{save("_checksend",String(todo.length));box.hidden=true;finish()};
+  box.querySelector("h3").focus();if(VO.on)setTimeout(()=>readEls([...box.querySelectorAll("h3,li")]),200)}
+function reportText(){const L=[E.title.toUpperCase()+" – EXPERIMENT REPORT","",`Data: ${S.mode==="sim"?"simulation":"real measurements"}`,"My findings:"];
+  S.trials.forEach(r=>L.push(`  ${fmt(r.iv,E.iv.decimals||0)} ${E.iv.unit}: ${r.dv==null?"—":fmt(r.dv,E.dv.decimals)+" "+E.dv.unit}${r.note?" — "+r.note:""}`));
+  if(S.answers.challenge)L.push(`Challenge: ${S.answers.challenge} (my guess: ${S.answers.challengeGuess||"—"}). ${S.answers.challengeWhy||""}`);
+  E.checkpoints.forEach((c,i)=>{if(S.answers[c.key])L.push(`Notice and wonder ${i+1}: ${S.answers[c.key]}`)});L.push("");
+  const pr=E.predictions.find(x=>x.k===S.prediction),ds=dataShape();
+  if(pr){L.push("MY PREDICTION");L.push(`I predicted: ${pr.t}.${S.answers.prediction_why?" "+S.answers.prediction_why.trim():""}`);
+    if(ds&&pr.shape)L.push(`My data showed it ${SHAPE[ds]}, so my prediction ${predMatches(pr,ds)?"was supported":"was not supported"}.`);
+    if((S.answers.predrethink||"").trim())L.push(S.answers.predrethink.trim());L.push("")}
+  const part=q=>/claim/i.test(q.tag)?"CLAIM":/evidence/i.test(q.tag)?"EVIDENCE":/reason/i.test(q.tag)?"REASONING":"GOING FURTHER";
+  let n=0;["CLAIM","EVIDENCE","REASONING","GOING FURTHER"].forEach(h=>{const qs=E.cer.filter(q=>part(q)===h);if(!qs.length)return;L.push(h);
+    qs.forEach(q=>{n++;L.push(`${n}. ${q.q}`);L.push((S.answers[q.k]||"(not answered)").trim())});L.push("")});return L.join("\n")}
+function finish(){$("promptBox").hidden=true;$("final").hidden=false;$("reportOut").textContent=reportText();
+  if(window.LabKit)LabKit.submit({prediction:(E.predictions.find(x=>x.k===S.prediction)||{}).t||"",answers:S.answers,phases:phases(),
+    findings:S.trials.map(r=>[`${fmt(r.iv,E.iv.decimals||0)} ${E.iv.unit}`,r.dv==null?"":`${fmt(r.dv,E.dv.decimals)} ${E.dv.unit}`,r.note||""]),
+    source:S.mode,readings:S.trials.filter(r=>r.dv!=null).length,report:reportText()})}
+$("btnEdit").onclick=()=>{S.pIdx=0;renderPrompt()};
+$("btnCopy").onclick=()=>{const t=reportText();navigator.clipboard.writeText(t).then(()=>$("copyMsg").textContent="Report copied.").catch(()=>$("copyMsg").textContent="Select the report text and copy it.")};
+
+/* ---------- voice: read aloud and speak answers ---------- */
+var VO={on:false,voice:null};const hasTTS="speechSynthesis" in window;
+function pick(){const vs=speechSynthesis.getVoices();if(!vs.length)return null;const pref=["Microsoft Aria Online","Microsoft Jenny Online","Microsoft Natasha Online","Google US English","Samantha","Google UK English Female","Karen"];
+  for(const n of pref){const v=vs.find(x=>x.name.startsWith(n));if(v)return v}return vs.find(v=>/^en[-_](AU|GB|US)/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||vs[0]}
+function stopVO(){if(hasTTS)speechSynthesis.cancel();document.querySelectorAll(".speaking").forEach(e=>e.classList.remove("speaking"))}
+function readEls(els){stopVO();if(!hasTTS)return;els.filter(e=>e&&e.offsetParent&&e.textContent.trim()).forEach(e=>{const u=new SpeechSynthesisUtterance(e.textContent.replace(/\s+/g," ").replace(/°/g," degrees").trim());
+  if(VO.voice){u.voice=VO.voice;u.lang=VO.voice.lang}u.rate=.95;u.onstart=()=>{document.querySelectorAll(".speaking").forEach(x=>x.classList.remove("speaking"));e.classList.add("speaking")};u.onend=u.onerror=()=>e.classList.remove("speaking");speechSynthesis.speak(u)})}
+function readStage(i){const s=document.querySelector(`section[data-step="${i}"]`);readEls([...s.querySelectorAll("h2,p,ol.how li,.choice b,.choice small")].filter(e=>!e.matches(".eyebrow,.scrub-text")&&!e.closest(".nav,.report-out")))}
+if(hasTTS){VO.voice=pick();try{speechSynthesis.addEventListener("voiceschanged",()=>VO.voice=pick())}catch(e){}$("btnVO").hidden=false;
+  $("btnVO").onclick=()=>{VO.on=!VO.on;$("btnVO").setAttribute("aria-pressed",VO.on);$("btnVOL").textContent=VO.on?"Reading aloud":"Read aloud";if(VO.on)readStage(S.step);else stopVO()};
+  document.querySelectorAll("section[data-step] h2").forEach(h=>{const b=document.createElement("button");b.type="button";b.className="listen";b.innerHTML=spk(14)+"Listen";b.onclick=()=>readStage(+h.closest("section").dataset.step);h.parentNode.insertBefore(b,h)})}
+function bindSpeak(scope){(scope||document).querySelectorAll(".speak").forEach(b=>{if(b._b)return;b._b=1;b.hidden=!(LK()&&LK().dictate);b.onclick=async()=>{const t=$(b.dataset.for);const old=b.textContent;b.textContent="Listening…";
+  try{const said=await LabKit.dictate();t.value=(t.value?t.value.trimEnd()+" ":"")+said;t.dispatchEvent(new Event("input"))}catch(e){b.textContent=e.message;setTimeout(()=>b.textContent=old,3000);return}b.textContent=old}})}
+bindSpeak();
+go(0);window.__aisxBooted=true;
+})();
+</script></body></html>

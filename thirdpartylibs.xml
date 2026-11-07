@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<libraries>
+  <library>
+    <location>fonts/archivo-latin-700-normal.woff2</location>
+    <name>Archivo (700)</name>
+    <description>Heading typeface, from the Fontsource package.</description>
+    <version>5.1.0</version>
+    <license>OFL</license>
+    <licenseversion>1.1</licenseversion>
+    <repository>https://github.com/Omnibus-Type/Archivo</repository>
+    <copyrights>
+      <copyright>2020 The Archivo Project Authors</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>fonts/archivo-latin-800-normal.woff2</location>
+    <name>Archivo (800)</name>
+    <description>Heading typeface, from the Fontsource package.</description>
+    <version>5.1.0</version>
+    <license>OFL</license>
+    <licenseversion>1.1</licenseversion>
+    <repository>https://github.com/Omnibus-Type/Archivo</repository>
+    <copyrights>
+      <copyright>2020 The Archivo Project Authors</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>fonts/archivo-latin-900-normal.woff2</location>
+    <name>Archivo (900)</name>
+    <description>Heading typeface, from the Fontsource package.</description>
+    <version>5.1.0</version>
+    <license>OFL</license>
+    <licenseversion>1.1</licenseversion>
+    <repository>https://github.com/Omnibus-Type/Archivo</repository>
+    <copyrights>
+      <copyright>2020 The Archivo Project Authors</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>fonts/atkinson-hyperlegible-latin-400-normal.woff2</location>
+    <name>Atkinson Hyperlegible (400)</name>
+    <description>Body typeface designed for low-vision readers, from the Fontsource package.</description>
+    <version>5.1.0</version>
+    <license>OFL</license>
+    <licenseversion>1.1</licenseversion>
+    <repository>https://github.com/googlefonts/atkinson-hyperlegible</repository>
+    <copyrights>
+      <copyright>2020 Braille Institute of America, Inc.</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>fonts/atkinson-hyperlegible-latin-700-normal.woff2</location>
+    <name>Atkinson Hyperlegible (700)</name>
+    <description>Body typeface designed for low-vision readers, from the Fontsource package.</description>
+    <version>5.1.0</version>
+    <license>OFL</license>
+    <licenseversion>1.1</licenseversion>
+    <repository>https://github.com/googlefonts/atkinson-hyperlegible</repository>
+    <copyrights>
+      <copyright>2020 Braille Institute of America, Inc.</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>fonts/jetbrains-mono-latin-500-normal.woff2</location>
+    <name>JetBrains Mono (500)</name>
+    <description>Typeface for numbers and readings, from the Fontsource package.</description>
+    <version>5.1.0</version>
+    <license>OFL</license>
+    <licenseversion>1.1</licenseversion>
+    <repository>https://github.com/JetBrains/JetBrainsMono</repository>
+    <copyrights>
+      <copyright>2020 The JetBrains Mono Project Authors</copyright>
+    </copyrights>
+  </library>
+  <library>
+    <location>fonts/jetbrains-mono-latin-700-normal.woff2</location>
+    <name>JetBrains Mono (700)</name>
+    <description>Typeface for numbers and readings, from the Fontsource package.</description>
+    <version>5.1.0</version>
+    <license>OFL</license>
+    <licenseversion>1.1</licenseversion>
+    <repository>https://github.com/JetBrains/JetBrainsMono</repository>
+    <copyrights>
+      <copyright>2020 The JetBrains Mono Project Authors</copyright>
+    </copyrights>
+  </library>
+</libraries>

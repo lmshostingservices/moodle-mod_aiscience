@@ -1,0 +1,391 @@
+[
+ {
+  "key": "angle-of-light",
+  "title": "Angle of Light",
+  "year": "Year 8",
+  "strand": "Physical sciences",
+  "question": "What happens to the light reading as a light sensor is tilted away from facing the light?",
+  "ivariable": "Angle of the sensor (0° to 90°)",
+  "dvariable": "Light intensity (lux)",
+  "curriculum": "Energy can be transferred and transformed; light spreads over a larger area when it strikes a surface at an angle. Plan and conduct a fair investigation, process data, and communicate findings with evidence.",
+  "equipment": "Desk lamp, light sensor or databot (optional), protractor",
+  "safety": "The lamp gets hot. Don't look directly into the bulb.",
+  "plan": {
+   "title": "Angle of Light",
+   "drivingQuestion": "What happens to the light reading as a light sensor is tilted away from facing the light?",
+   "objectives": [
+    "Measure light intensity in lux at three sensor angles",
+    "Describe the pattern: tilting spreads the same light over more area, so readings fall",
+    "Compare measured results with the cosine rule",
+    "Explain how the angle of sunlight causes the seasons"
+   ],
+   "curriculumLinks": [
+    "Energy transfer and transformation, including light",
+    "Planning and conducting investigations",
+    "Processing and analysing data"
+   ],
+   "inquirySkills": [
+    "Questioning and predicting",
+    "Planning and conducting",
+    "Processing, modelling and analysing",
+    "Evaluating",
+    "Communicating"
+   ],
+   "variables": {
+    "independent": "Sensor angle (0°, about 45°, about 75°)",
+    "dependent": "Light intensity (lux)",
+    "controlled": [
+     "Same lamp",
+     "Same distance to the lamp",
+     "Room lights unchanged",
+     "Sensor held still"
+    ]
+   },
+   "model": {
+    "description": "Light on a tilted surface falls with the cosine of the tilt angle, because the same beam spreads over more area.",
+    "formula": "E = E₀ × cos θ"
+   },
+   "interactives": [
+    "Drag the databot to tilt it from 0° to 90°; photons, glow and beam-caught gauge respond live",
+    "Sensor tilt and light strength sliders",
+    "Autoplay at 1×, 2× or 4× moves through flat, halfway and almost sideways",
+    "Graph scrubber to read any point"
+   ],
+   "noticeWonder": [
+    "What do you notice about the reading while the databot lies flat?",
+    "What happened to the reading when it tilted halfway?",
+    "Almost sideways now: what do you notice, and what do you wonder?"
+   ],
+   "challenge": "Find the tilt angle that halves the light reading (the answer is 60°, not 45°).",
+   "findingsTable": [
+    "Angle",
+    "Reading (lux)",
+    "What I noticed"
+   ],
+   "misconceptions": [
+    "The Sun is closer to Earth in summer",
+    "Tilting changes how much light the lamp gives out",
+    "Half the tilt (45°) gives half the light"
+   ],
+   "safety": [
+    "The lamp gets hot. Don't look directly into the bulb."
+   ],
+   "stages": [
+    [
+     "Get started",
+     "Drag the databot under the lamp and watch how much of the beam it catches"
+    ],
+    [
+     "Predict",
+     "Pick a graph shape and explain why"
+    ],
+    [
+     "Set up",
+     "Use the simulation, or a real lamp and light sensor"
+    ],
+    [
+     "Collect",
+     "Record for 60 s while tilting to 45° and 75°, or press Autoplay; answer notice-and-wonder checkpoints; fill in the findings table"
+    ],
+    [
+     "Analyze",
+     "Read the graph, compare with the cosine rule, solve the half-light challenge"
+    ],
+    [
+     "Report",
+     "Nine CER questions with evidence hints from your own data"
+    ]
+   ],
+   "cer": [
+    "Claim",
+    "Flat reading",
+    "Halfway reading",
+    "Almost sideways reading",
+    "Prediction check",
+    "Why tilting changes the reading",
+    "Link to the seasons",
+    "Sources of error",
+    "What to test next"
+   ]
+  }
+ },
+ {
+  "key": "pendulum-swing",
+  "title": "Pendulum Swing",
+  "year": "Year 10",
+  "strand": "Physical sciences",
+  "question": "How does the length of a pendulum change how long one swing takes?",
+  "ivariable": "String length (10 to 100 cm)",
+  "dvariable": "Period of one swing (s)",
+  "curriculum": "Investigate the motion of objects and the forces acting on them; use models and mathematical relationships to explain observed motion.",
+  "equipment": "String, washers, retort stand, ruler, stopwatch",
+  "safety": "Keep swinging bobs away from faces. Clamp the stand to the bench.",
+  "plan": {
+   "title": "Pendulum Swing",
+   "drivingQuestion": "Why does a grandfather clock need such a long pendulum?",
+   "objectives": [
+    "Measure the period of a pendulum at five string lengths",
+    "Identify that length, not mass, controls the period",
+    "Recognise a square-root relationship from a curved graph",
+    "Explain why timing 10 swings reduces error"
+   ],
+   "curriculumLinks": [],
+   "inquirySkills": [
+    "Questioning and predicting",
+    "Planning and conducting",
+    "Processing, modelling and analysing",
+    "Evaluating",
+    "Communicating"
+   ],
+   "variables": {
+    "independent": "String length (20, 40, 60, 80, 100 cm)",
+    "dependent": "Period (s)",
+    "controlled": [
+     "Same bob",
+     "Same release angle (about 10°)",
+     "Same timing method"
+    ]
+   },
+   "model": {
+    "description": "The period depends on the square root of the length: four times the length gives twice the period.",
+    "formula": "T = 2π√(L ÷ g)"
+   },
+   "interactives": [
+    "Drag the bob to change the string length; motion trail and period HUD update live",
+    "String length and bob mass sliders",
+    "Autoplay times every length at 1×, 2× or 4×",
+    "Graph scrubber and model overlay"
+   ],
+   "noticeWonder": [
+    "You timed the shortest pendulum. What do you notice about how fast it swings?",
+    "How has the period changed as the string got longer?",
+    "Did doubling the length double the period?"
+   ],
+   "challenge": "Build a one-second pendulum (about 25 cm).",
+   "findingsTable": [
+    "String length (cm)",
+    "Period (s)",
+    "What I noticed"
+   ],
+   "misconceptions": [
+    "Heavier bobs swing faster",
+    "Doubling the length doubles the period"
+   ],
+   "safety": [
+    "Keep swinging bobs away from faces. Clamp the stand to the bench."
+   ],
+   "stages": [
+    [
+     "Get started",
+     "Drag the bob and change the mass; watch the period"
+    ],
+    [
+     "Predict",
+     "Pick a graph shape and explain why"
+    ],
+    [
+     "Set up",
+     "Simulation, or a real stand, string and stopwatch"
+    ],
+    [
+     "Collect",
+     "Run trials at five lengths or press Autoplay; notice-and-wonder checkpoints; findings table"
+    ],
+    [
+     "Analyze",
+     "Graph, model overlay, one-second pendulum challenge"
+    ],
+    [
+     "Report",
+     "Seven CER questions"
+    ]
+   ]
+  }
+ },
+ {
+  "key": "dissolving-race",
+  "title": "Dissolving Race",
+  "year": "Year 7",
+  "strand": "Chemical sciences",
+  "question": "Does sugar dissolve faster in hotter water?",
+  "ivariable": "Water temperature (10 to 90 °C)",
+  "dvariable": "Time to dissolve (s)",
+  "curriculum": "Use the particle model to explain the properties of substances and the processes of dissolving.",
+  "equipment": "Beakers, sugar cubes, kettle, thermometer, stopwatch",
+  "safety": "Hot water scalds. Teacher pours water above 50 °C. Wear safety glasses.",
+  "plan": {
+   "title": "Dissolving Race",
+   "drivingQuestion": "Why does sugar vanish faster in hot tea than in iced tea?",
+   "objectives": [
+    "Measure dissolving time at five water temperatures",
+    "Describe the pattern as a curve that levels off",
+    "Explain the pattern with the particle model",
+    "Identify variables to control for a fair test"
+   ],
+   "curriculumLinks": [],
+   "inquirySkills": [
+    "Questioning and predicting",
+    "Planning and conducting",
+    "Processing, modelling and analysing",
+    "Evaluating",
+    "Communicating"
+   ],
+   "variables": {
+    "independent": "Water temperature (10, 30, 50, 70, 90 °C)",
+    "dependent": "Time to dissolve (s)",
+    "controlled": [
+     "Same cube size",
+     "Same volume of water (150 mL)",
+     "No stirring"
+    ]
+   },
+   "model": {
+    "description": "Hotter water particles move faster and break the sugar apart sooner.",
+    "formula": "pattern only"
+   },
+   "interactives": [
+    "Drag up or down to heat the water; particles speed up and steam appears",
+    "Temperature and stirring sliders",
+    "Autoplay races every temperature",
+    "Graph scrubber and model overlay"
+   ],
+   "noticeWonder": [
+    "Cold water first. What do you notice about the particles and the time?",
+    "Now the water is warm. What's different?",
+    "Hottest water. What pattern do you see?"
+   ],
+   "challenge": "Make the cube dissolve in one minute.",
+   "findingsTable": [
+    "Water temperature (°C)",
+    "Time to dissolve (s)",
+    "What I noticed"
+   ],
+   "misconceptions": [
+    "Sugar disappears, so it is gone",
+    "Hot water always halves the time"
+   ],
+   "safety": [
+    "Hot water scalds. Teacher pours water above 50 °C. Wear safety glasses."
+   ],
+   "stages": [
+    [
+     "Get started",
+     "Heat the water and stir; watch the particles"
+    ],
+    [
+     "Predict",
+     "Pick a graph shape and explain why"
+    ],
+    [
+     "Set up",
+     "Simulation, or real beakers and a thermometer"
+    ],
+    [
+     "Collect",
+     "Race five temperatures or press Autoplay; checkpoints; findings table"
+    ],
+    [
+     "Analyze",
+     "Graph, model overlay, one-minute challenge"
+    ],
+    [
+     "Report",
+     "Six CER questions"
+    ]
+   ]
+  }
+ },
+ {
+  "key": "light-and-plant-growth",
+  "title": "Light and Plant Growth",
+  "year": "Year 4",
+  "strand": "Biological sciences",
+  "question": "Do plants grow taller with more hours of light each day?",
+  "ivariable": "Hours of light each day (0 to 16)",
+  "dvariable": "Plant height after 3 weeks (mm)",
+  "curriculum": "Living things depend on each other and the environment; plants need light, water and air to grow.",
+  "equipment": "Bean seeds, pots, potting mix, lamp, ruler",
+  "safety": "Wash your hands after touching soil. Don't touch the hot lamp.",
+  "plan": {
+   "title": "Light and Plant Growth",
+   "drivingQuestion": "Do plants need light to grow tall?",
+   "objectives": [
+    "Grow plants with different hours of light",
+    "Measure height in millimetres",
+    "Describe the pattern: more light, taller, up to a limit",
+    "Explain that plants use light to make food"
+   ],
+   "curriculumLinks": [],
+   "inquirySkills": [
+    "Questioning and predicting",
+    "Planning and conducting",
+    "Processing, modelling and analysing",
+    "Evaluating",
+    "Communicating"
+   ],
+   "variables": {
+    "independent": "Hours of light each day (0, 4, 8, 12, 16)",
+    "dependent": "Height after 3 weeks (mm)",
+    "controlled": [
+     "Same type of seed",
+     "Same water each day (20 mL)",
+     "Same pot and soil"
+    ]
+   },
+   "model": {
+    "description": "Plants use light to make food, so more light means more growth, until something else runs short.",
+    "formula": "pattern only"
+   },
+   "interactives": [
+    "Drag the lamp to change the hours of light; day and night cycle in the time-lapse",
+    "Light and water sliders",
+    "Autoplay grows every plant over 21 days",
+    "Graph and model overlay"
+   ],
+   "noticeWonder": [
+    "This plant had no light. What do you notice?",
+    "8 hours of light. How is it different?",
+    "16 hours of light. What do you wonder?"
+   ],
+   "challenge": "Grow a 100 mm bean plant.",
+   "findingsTable": [
+    "Hours of light",
+    "Height (mm)",
+    "What I noticed"
+   ],
+   "misconceptions": [
+    "Plants get their food from the soil",
+    "More light always means more growth"
+   ],
+   "safety": [
+    "Wash your hands after touching soil. Don't touch the hot lamp."
+   ],
+   "stages": [
+    [
+     "Get started",
+     "Move the lamp and change the water; watch the plant"
+    ],
+    [
+     "Predict",
+     "Pick a graph shape and say why"
+    ],
+    [
+     "Set up",
+     "Simulation, or real bean plants for 3 weeks"
+    ],
+    [
+     "Collect",
+     "Grow five plants in time-lapse or press Autoplay; checkpoints; findings table"
+    ],
+    [
+     "Analyze",
+     "Graph and the 100 mm challenge"
+    ],
+    [
+     "Report",
+     "Six questions with sentence starters"
+    ]
+   ]
+  }
+ }
+]
