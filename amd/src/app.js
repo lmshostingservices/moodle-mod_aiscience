@@ -305,7 +305,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             '<div class="aisx-prompts" aria-label="Note starters"><button type="button" data-starter="I noticed ">I noticed…' +
             '</button><button type="button" data-starter="I wonder why ">I wonder…</button><button type="button" ' +
             'data-starter="This surprised me because ">Surprised me…</button></div>' +
-            '<label class="aisx-chip"><input type="checkbox" id="aisx-nbpause" checked> Pause the experiment while I write</label>' +
+            '<label class="aisx-chip"><input type="checkbox" id="aisx-nbpause" checked> Pause the experiment while I ' +
+                'write</label>' +
             '<label for="aisx-nbtext" class="sr-only">New note</label>' +
             '<textarea id="aisx-nbtext" rows="3" placeholder="What did you notice?"></textarea>' +
             '<div class="aisx-row"><button type="button" class="aisx-btn aisx-primary" id="aisx-nbadd">Add note</button>' +
@@ -702,7 +703,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         var vrows = vs.map(function(v) {
             return '<tr><td>' + v.versionnum + '</td><td>' + esc(parse(v.plan, {}).title || '—') + '</td><td>' +
                 ({library: 'Library', edit: 'Your edit'}[v.source] || (v.instruction ? 'AI refine' : 'AI')) +
-                (v.instruction ? '<small class="aisx-vnote">' + esc(v.instruction) + '</small>' : '') + '</td><td><span class="aisx-tag ' + (v.current ? 'ok' :
+                (v.instruction ? '<small class="aisx-vnote">' + esc(v.instruction) + '</small>' : '') +
+                    '</td><td><span class="aisx-tag ' + (v.current ? 'ok' :
                 v.status === 'failed' ? 'bad' : '') + '">' + esc(v.current ? 'Live' : STATUS[v.status] || v.status) +
                 '</span></td><td>' + new Date(v.timemodified * 1000).toLocaleString([], {dateStyle: 'medium',
                 timeStyle: 'short'}) + '</td><td class="aisx-r">' + (v.status !== 'planning' && v.status !== 'planned' &&
@@ -1196,13 +1198,16 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         }).join('');
         pane.innerHTML = '<div class="aisx-kpis">' + kpis.map(function(k) {
             return '<div class="aisx-kpi"><div class="v">' + esc(k[1]) + '</div><div class="l">' + esc(k[0]) + '</div></div>';
-        }).join('') + '</div>' + shiftHTML + '<div class="aisx-rgrid"><section class="aisx-card"><h3>Class data, pooled</h3><p class="aisx-muted ' +
+        }).join('') + '</div>' + shiftHTML +
+            '<div class="aisx-rgrid"><section class="aisx-card"><h3>Class data, pooled</h3><p class="aisx-muted ' +
             'aisx-small">Bars show the class average for each condition; dots are individual students. Outliers are a ' +
             'great start for a discussion about measurement.</p><svg id="aisx-pool" viewBox="0 0 560 270" role="img" ' +
-            'aria-label="Class averages per condition"></svg><h3 class="aisx-mt">What students predicted</h3><p class="aisx-muted ' +
+            'aria-label="Class averages per condition"></svg><h3 class="aisx-mt">What students predicted</h3><p ' +
+                'class="aisx-muted ' +
             'aisx-small">✓ marks the prediction their own data supported.</p>' +
             '<svg id="aisx-pred" viewBox="0 0 560 140" role="img" aria-label="Prediction choices"></svg></section>' +
-            '<section class="aisx-card"><h3>Students</h3>' + amarkHTML() + (rows.length ? '<div class="aisx-tblwrap"><table class="aisx-tbl ' +
+            '<section class="aisx-card"><h3>Students</h3>' + amarkHTML() +
+                (rows.length ? '<div class="aisx-tblwrap"><table class="aisx-tbl ' +
             'aisx-click"><thead><tr><th>Student</th><th>Prediction</th><th>Readings</th><th>Notes</th><th>Status</th>' +
             '<th>Grade' + tip('Saved grades are shown in black. Suggested marks from auto-marking are shown in grey until you ' +
             'approve them.') + '</th></tr></thead><tbody>' + trs + '</tbody></table></div>' :
@@ -1278,20 +1283,24 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         }).join('') + '</tbody></table></div>' : '';
         var pc = answers._predmatch ? '<div class="aisx-pcline ' + (answers._predmatch === 'yes' ? 'ok' : 'no') + '"><b>' +
             (answers._predmatch === 'yes' ? 'Prediction supported' : 'Prediction not supported') + '</b> · predicted "' +
-            esc(a.prediction || '—') + '", their data ' + esc(answers._datashape || '') + '.' + ((answers.predrethink || '').trim() ?
+            esc(a.prediction || '—') + '", their data ' + esc(answers._datashape || '') + '.' +
+                ((answers.predrethink || '').trim() ?
             '<span>“' + esc(answers.predrethink.trim()) + '”</span>' : answers._predmatch === 'no' ?
             '<span class="aisx-muted">Hasn\'t explained what changed their mind yet.</span>' : '') + '</div>' : '';
         var BY = {engine: 'Comparison', ondevice: 'On-device AI', ai: 'AI · 1 credit', teacher: 'You'};
         var qHTML = mk && !mk.guide.basic ? '<h4 class="aisx-h4">Answers, marked one by one' + tip('Each answer has a ' +
             'suggested mark out of 4 with the reason. Click a number to change it. The Claim, Evidence and Reasoning scores ' +
-            'below are the averages of the answers in each part.') + '</h4><ol class="aisx-qlist">' + mk.guide.questions.map(function(q) {
+            'below are the averages of the answers in each part.') + '</h4><ol class="aisx-qlist">' +
+                mk.guide.questions.map(function(q) {
                 var m = mk.q[q.k];
                 var ansText = String(answers[q.k] || '').trim();
-                return '<li class="aisx-qi ' + (m.conf === 'low' && !m.empty ? 'unsure' : '') + '"><div class="aisx-qh"><span class="aisx-qpart ' +
+                return '<li class="aisx-qi ' + (m.conf === 'low' && !m.empty ? 'unsure' : '') +
+                    '"><div class="aisx-qh"><span class="aisx-qpart ' +
                     q.part + '">' + esc(Marker.PART[q.part]) + '</span><b>' + esc(q.q) + '</b></div><p class="aisx-qa">' +
                     (ansText ? esc(ansText) : '<i class="aisx-muted">No answer</i>') + '</p><div class="aisx-qm" role="group" ' +
                     'aria-label="Mark for this answer">' + [0, 1, 2, 3, 4].map(function(v) {
-                        return '<button type="button" data-qk="' + esc(q.k) + '" data-qv="' + v + '" aria-pressed="' + (m.mark === v) +
+                        return '<button type="button" data-qk="' + esc(q.k) + '" data-qv="' + v + '" aria-pressed="' +
+                            (m.mark === v) +
                             '">' + v + '</button>';
                     }).join('') + '<span class="aisx-qby">' + esc(BY[m.by] || m.by) + (m.conf === 'low' && !m.empty ?
                     ' · <b>unsure</b>' : '') + '</span>' + (m.conf === 'low' && !m.empty && S.results.aimark &&
@@ -1311,12 +1320,14 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'rubric">' + crit.map(function(c) {
                 return '<span class="h">' + c[1] + '</span>' + [0, 1, 2, 3, 4].map(function(v) {
                     return '<button type="button" data-k="' + c[0] + '" data-v="' + v + '" aria-pressed="' + (a._rub[c[0]] === v) +
-                        '" aria-label="' + c[1] + ' ' + v + ': ' + esc(RUBRIC[c[0]][v]) + '" title="' + esc(RUBRIC[c[0]][v]) + '">' +
+                        '" aria-label="' + c[1] + ' ' + v + ': ' + esc(RUBRIC[c[0]][v]) + '" title="' + esc(RUBRIC[c[0]][v]) +
+                            '">' +
                         v + '</button>';
                 }).join('') + '<span class="aisx-rubd" id="aisx-rubd-' + c[0] + '">' + (a._rub[c[0]] >= 0 ?
                     esc(RUBRIC[c[0]][a._rub[c[0]]]) : 'Pick a level.') + '</span>';
             }).join('') + '</div><label for="aisx-fb" class="aisx-small"><b>Feedback to the student</b></label>' +
-            '<textarea id="aisx-fb" rows="3">' + esc(a.feedback || (mk && a.status !== 'graded' ? mk.feedback : '')) + '</textarea><div class="aisx-row aisx-mt">' +
+            '<textarea id="aisx-fb" rows="3">' + esc(a.feedback || (mk && a.status !== 'graded' ? mk.feedback : '')) +
+                '</textarea><div class="aisx-row aisx-mt">' +
             (C.cangrade ? '<button type="button" class="aisx-btn aisx-primary" id="aisx-savegrade">Save grade</button>' : '') +
             '<span class="aisx-note" id="aisx-gnote">' + (a.grade >= 0 ? 'Saved: ' + a.grade + ' / ' + r.maxgrade : '') +
             '</span></div></div>';
@@ -1432,7 +1443,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         return n.length ? (n.length % 2 ? n[(n.length - 1) / 2] : (n[n.length / 2 - 1] + n[n.length / 2]) / 2) : null;
     };
     var bar = function(pct, tone) {
-        return '<span class="aisx-meter ' + (tone || '') + '"><i style="width:' + Math.max(0, Math.min(100, pct || 0)) + '%"></i></span>';
+        return '<span class="aisx-meter ' + (tone || '') + '"><i style="width:' + Math.max(0, Math.min(100, pct || 0)) +
+            '%"></i></span>';
     };
     var renderInsights = function() {
         var pane = $('#aisx-pane-insights');
@@ -1447,7 +1459,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             return a.status !== 'inprogress';
         });
         if (!all.length) {
-            pane.innerHTML = '<section class="aisx-card"><h3>Class insights</h3><p class="aisx-muted">Insights appear once students ' +
+            pane.innerHTML = '<section class="aisx-card"><h3>Class insights</h3><p class="aisx-muted">Insights appear once ' +
+                'students ' +
                 'start the experiment.</p></section>';
             return;
         }
@@ -1468,11 +1481,13 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             return x.ans._checksend !== undefined && parseInt(x.ans._checksend, 10) < parseInt(x.ans._checkfirst, 10);
         });
         var kpi = function(v, l, t) {
-            return '<div class="aisx-kpi"><div class="v">' + esc(v) + '</div><div class="l">' + esc(l) + (t ? tip(t) : '') + '</div></div>';
+            return '<div class="aisx-kpi"><div class="v">' + esc(v) + '</div><div class="l">' + esc(l) + (t ? tip(t) : '') +
+                '</div></div>';
         };
         var medmin = median(mins);
         var html = '<div class="aisx-kpis">' + kpi(done.length + ' / ' + all.length, 'Reports submitted') +
-            kpi(medmin === null ? '—' : Math.round(medmin) + ' min', 'Typical time', 'The middle time from opening the experiment ' +
+            kpi(medmin === null ? '—' : Math.round(medmin) +
+                ' min', 'Typical time', 'The middle time from opening the experiment ' +
             'to sending the report. Half the class took longer, half took less.') +
             kpi(checked.length ? improved.length + ' / ' + checked.length : '—', 'Improved after feedback', 'Students see a ' +
             '"Before you send it" check on their report. This counts how many fixed at least one thing it pointed out.') +
@@ -1482,7 +1497,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             '</div>';
         // Questions.
         var items = done.length ? Marker.itemAnalysis(g, rows) : [];
-        html += '<section class="aisx-card aisx-ins"><p class="aisx-eyebrow">Where students go wrong</p><h3>Question by question</h3>' +
+        html += '<section class="aisx-card aisx-ins"><p class="aisx-eyebrow">Where students go wrong</p><h3>Question by ' +
+            'question</h3>' +
             '<p class="aisx-muted aisx-small">Marks come from auto-marking, or your own marks where you have graded. ' +
             'Each question gets a plain-English verdict: is the wording the problem, or does the idea need more teaching?</p>' +
             (items.length ? '<div class="aisx-tblwrap"><table class="aisx-tbl aisx-itbl"><thead><tr><th>Question</th><th>Average' +
@@ -1494,14 +1510,16 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'usually means the question or its marking is misleading.') + '</th><th>Verdict' + tip('"Reword the question" ' +
             'when nearly everyone struggled, even strong students. "Teach it again" when strong students got it but many did ' +
             'not. "Check the marking" when strong students did worse than weaker ones. "Working well", "Fine" or "Easy" ' +
-            'otherwise.') + '</th></tr></thead><tbody>' + items.map(function(it, i) {
+            'otherwise.') + '</th></tr></thead><tbody>' + items.map(function(it) {
                 var d = it.disc === null ? '—' : it.disc.toFixed(2);
                 var dtone = it.disc === null ? '' : it.disc < 0 ? 'bad' : it.disc < 0.2 ? 'warn' : 'ok';
                 return '<tr><td><span class="aisx-qpart ' + it.part + '">' + esc(it.partLabel) + '</span> ' + esc(it.q) +
                     '</td><td class="aisx-nw">' + (it.facility === null ? '—' : it.facility + '% ' + bar(it.facility,
-                    it.facility < 30 ? 'bad' : it.facility < 50 ? 'warn' : 'ok')) + '</td><td class="aisx-nw"><span class="aisx-tag ' +
+                    it.facility < 30 ? 'bad' : it.facility < 50 ? 'warn' : 'ok')) +
+                        '</td><td class="aisx-nw"><span class="aisx-tag ' +
                     dtone + '">' + d + '</span>' + (it.top !== null ? '<small class="aisx-muted"> strong ' + it.top + '% · ' +
-                    'others ' + it.bottom + '%</small>' : '') + '</td><td><span class="aisx-verdict ' + it.tone + '">' + esc(it.verdict) +
+                    'others ' + it.bottom + '%</small>' : '') + '</td><td><span class="aisx-verdict ' + it.tone + '">' +
+                        esc(it.verdict) +
                     '</span></td></tr><tr class="aisx-adv"><td colspan="4"><p>' + esc(it.advice) + '</p>' + (it.weak.length ?
                     '<details><summary>' + it.weak.length + (it.weak.length === 1 ? ' student' : ' students') + ' scored 2 or ' +
                     'less</summary><ul>' + it.weak.slice(0, 12).map(function(w) {
@@ -1531,7 +1549,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'Reasoning' + tip('The three parts of a scientific explanation. Claim: what they found. Evidence: the numbers that ' +
             'show it. Reasoning: the science idea that explains why. Each is scored 0 to 4.') + '</h3><div class="aisx-cer">' +
             parts.map(function(x) {
-                return '<div><b>' + esc(Marker.PART[x.p]) + '</b><span class="aisx-big">' + x.avg.toFixed(1) + '<small> / 4</small></span>' +
+                return '<div><b>' + esc(Marker.PART[x.p]) + '</b><span class="aisx-big">' + x.avg.toFixed(1) +
+                    '<small> / 4</small></span>' +
                     bar(x.avg / 4 * 100, x.avg < 2 ? 'bad' : x.avg < 3 ? 'warn' : 'ok') + '<small class="aisx-muted">' +
                     x.low.length + ' scored 0–1</small></div>';
             }).join('') + '</div>' + (rows.length ? '<p class="aisx-small"><b>Biggest gap: ' + esc(Marker.PART[weakest.p]) +
@@ -1577,8 +1596,10 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         html += '<section class="aisx-card aisx-ins"><p class="aisx-eyebrow">Progress</p><h3>How far students got' +
             tip('How many students reached each step. A big drop between two steps shows where students get stuck.') + '</h3>' +
             '<div class="aisx-funnel">' + stages.map(function(n, i) {
-                return '<div><span>' + (i + 1) + '. ' + esc(names[i]) + '</span>' + bar(n / all.length * 100, 'ok') + '<b>' + n + '</b></div>';
-            }).join('') + '<div><span>Report sent</span>' + bar(done.length / all.length * 100, 'ok') + '<b>' + done.length + '</b></div>' +
+                return '<div><span>' + (i + 1) + '. ' + esc(names[i]) + '</span>' + bar(n / all.length * 100, 'ok') + '<b>' + n +
+                    '</b></div>';
+            }).join('') + '<div><span>Report sent</span>' + bar(done.length / all.length * 100, 'ok') + '<b>' + done.length +
+                '</b></div>' +
             '</div>' + (working.length ? '<p class="aisx-small"><b>Still working:</b> ' + working.map(function(a) {
                 return esc(a.fullname) + ' (' + esc(a.stagename || 'step ' + a.stage) + ', active ' +
                     new Date(a.timemodified * 1000).toLocaleString([], {dateStyle: 'short', timeStyle: 'short'}) + ')';
@@ -1610,7 +1631,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             odd.slice(0, 20).map(function(o) {
                 return '<li>' + esc(o) + '</li>';
             }).join('') + '</ul>' : '<p class="aisx-muted aisx-small">No unusual readings.</p>') + '</section>';
-        html += '<div class="aisx-row"><button type="button" class="aisx-btn" id="aisx-csv">Download as a spreadsheet (CSV)</button></div>';
+        html += '<div class="aisx-row"><button type="button" class="aisx-btn" id="aisx-csv">Download as a spreadsheet ' +
+            '(CSV)</button></div>';
         pane.innerHTML = html;
         $('#aisx-csv').addEventListener('click', function() {
             var qk = g.questions.map(function(q) {
@@ -1956,7 +1978,6 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         }
     };
     var saveRefine = function(publish, btn) {
-        var out = $('#aisx-rf-result');
         $$('#aisx-rf-bar button').forEach(function(b) {
             b.disabled = true;
         });
@@ -2047,7 +2068,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'Edit &amp; refine</button>' : '') + '<button type="button" role="tab" data-tab="preview" aria-selected="false">' +
             'Student preview</button>' +
             (C.canreports ? '<button type="button" role="tab" data-tab="results" aria-selected="false">Results &amp; grading' +
-            '</button><button type="button" role="tab" data-tab="insights" aria-selected="false">Class insights</button>' : '') + '</div></header>' +
+            '</button><button type="button" role="tab" data-tab="insights" aria-selected="false">Class insights</button>' : '') +
+                '</div></header>' +
             '<div class="aisx-pane" data-pane="build" id="aisx-pane-build"></div>' +
             '<div class="aisx-pane" data-pane="refine" id="aisx-pane-refine" hidden></div>' +
             '<div class="aisx-pane" data-pane="preview" id="aisx-pane-preview" hidden></div>' +
@@ -2085,7 +2107,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                     });
                 });
                 var h = (location.hash || '').slice(1);
-                var allowed = C.cangenerate ? ['build', 'refine', 'preview', 'results', 'insights'] : ['preview', 'results', 'insights'];
+                var allowed = C.cangenerate ? ['build', 'refine', 'preview', 'results', 'insights'] : ['preview', 'results',
+                    'insights'];
                 tab(allowed.indexOf(h) > -1 ? h : C.cangenerate ? 'build' : C.canreports ? 'results' : 'preview');
             } else {
                 S.isTeacherPreview = false;

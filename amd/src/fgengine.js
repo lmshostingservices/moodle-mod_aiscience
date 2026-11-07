@@ -14,7 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Rule-based auto-marking from LMS Labs Fast Grade (local_fastgrade 1.4.1), used unchanged: no AI, no external services. Text is split into sentences, words are
+ * Rule-based auto-marking from LMS Labs Fast Grade (local_fastgrade 1.4.1), used unchanged: no AI, no external services. Text is
+ * split into sentences, words are
  * reduced to their stems (Porter algorithm), and each assessor-set rule is checked.
  *
  * @module     mod_aiscience/fgengine

@@ -299,6 +299,7 @@ jobs:
           if [ -z "$COMPONENT" ]; then echo "No component in plugin/version.php"; exit 0; fi
           PLUGIN_PATH=$(cd moodle && find . -name version.php -not -path "./node_modules/*" \
             -exec grep -l "component *= *'$COMPONENT'" {} \; 2>/dev/null | head -1 | xargs -r dirname)
+          PLUGIN_PATH="${PLUGIN_PATH#./}"
           if [ -z "$PLUGIN_PATH" ] || [ ! -d "moodle/$PLUGIN_PATH/amd" ]; then
             echo "No amd directory for $COMPONENT"; exit 0
           fi

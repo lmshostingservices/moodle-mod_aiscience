@@ -298,6 +298,7 @@ class generator {
      * @param string $report
      * @param int $contextid
      * @param int $userid
+     * @param int $attemptid the attempt, so the credit is logged against it (0 when none)
      * @return array
      */
     public static function suggest_rubric(

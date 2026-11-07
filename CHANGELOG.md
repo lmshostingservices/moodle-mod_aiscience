@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.4 (2026-11-07)
+
+Passes Moodle Plugin CI
+- Language strings in alphabetical order, as the Moodle coding standard requires.
+- Complete PHPDoc for every function parameter.
+- JavaScript meets Moodle's ESLint rules (line length, no unused variables), and the files in amd/build are built by Moodle's own Grunt. The 4.5 and 5.3 toolchains produce identical files.
+- No change to how the plugin works.
+
 ## 1.3.3 (2026-11-07)
 
 Lab notebook and quality

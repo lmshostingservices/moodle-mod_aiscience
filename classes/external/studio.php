@@ -202,6 +202,7 @@ class studio extends external_api {
      *
      * @param int $cmid
      * @param string $instruction
+     * @param int $basedon version to refine, 0 for the published one
      * @return array
      */
     public static function change($cmid, $instruction, $basedon = 0) {

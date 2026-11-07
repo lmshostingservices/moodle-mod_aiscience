@@ -409,7 +409,8 @@ define(['mod_aiscience/fgengine'], function(FG) {
             return g && weakn ? g.n / weakn : 0;
         };
         if (share('short') + share('empty') > 0.4) {
-            return 'Many answers were blank or very short, so students may not know what you want. Add a sentence starter, or say ' +
+            return 'Many answers were blank or very short, so students may not know what you want. Add a sentence starter, or ' +
+                'say ' +
                 'exactly what to include (for example: "Use two numbers from your table").';
         }
         if (top === 'nonums') {
@@ -419,7 +420,8 @@ define(['mod_aiscience/fgengine'], function(FG) {
             return 'Ask "why" directly, for example "Explain why… Start with: This happens because…".';
         }
         if (top.indexOf('m:') === 0) {
-            return 'Students rarely mentioned "' + top.slice(2) + '". If that idea is what you\'re after, name it or hint at it in the ' +
+            return 'Students rarely mentioned "' + top.slice(2) +
+                '". If that idea is what you\'re after, name it or hint at it in the ' +
                 'question; if other answers are also right, add them to the key ideas.';
         }
         return 'Make the question more specific about what a full answer includes, and check the model answer matches it.';
@@ -430,7 +432,8 @@ define(['mod_aiscience/fgengine'], function(FG) {
             return {v: 'Too early', tone: 'muted', text: 'Needs at least 5 marked reports before the numbers mean much.'};
         }
         if (d !== null && d < 0) {
-            return {v: 'Check the marking', tone: 'bad', text: 'Students who did well on the rest of the report scored lower here ' +
+            return {v: 'Check the marking', tone: 'bad',
+                text: 'Students who did well on the rest of the report scored lower here ' +
                 'than students who struggled. The question, model answer or key ideas may be misleading. Read a few answers from ' +
                 'your strongest students and compare them with the model answer.'};
         }
@@ -439,7 +442,8 @@ define(['mod_aiscience/fgengine'], function(FG) {
                 'else, so the wording is the likely problem rather than the students. ' + rewordTip(q, gaps, weakn) + gap};
         }
         if (f < 50) {
-            return {v: 'Teach it again', tone: 'warn', text: 'Many students missed this, but the students who understood the rest ' +
+            return {v: 'Teach it again', tone: 'warn',
+                text: 'Many students missed this, but the students who understood the rest ' +
                 'of the experiment got it, so the question works and the idea needs more teaching.' + gap};
         }
         if (f >= 90) {
@@ -450,7 +454,8 @@ define(['mod_aiscience/fgengine'], function(FG) {
             return {v: 'Working well', tone: 'ok', text: 'This question separates students who understand from students who ' +
                 'don\'t, and most students got it.' + (weakn ? gap : '')};
         }
-        return {v: 'Fine', tone: 'ok', text: 'Most students got it, but it doesn\'t tell you much about who understands the whole ' +
+        return {v: 'Fine', tone: 'ok',
+            text: 'Most students got it, but it doesn\'t tell you much about who understands the whole ' +
             'experiment. Asking students to explain why would make it more useful.' + (weakn ? gap : '')};
     };
 
