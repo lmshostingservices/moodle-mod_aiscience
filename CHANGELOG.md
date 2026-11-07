@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.5 (2026-11-07)
+
+Passes Moodle's CSS checks
+- styles.css is laid out to Moodle's stylelint rules (4.5 and 5.3 configs). The rules themselves are unchanged.
+- The few intentional exceptions are marked with the reason: !important where a theme rule must be beaten or reduced motion must win, and modern CSS (text-wrap, min()) that older validators don't know.
+
 ## 1.3.4 (2026-11-07)
 
 Passes Moodle Plugin CI
