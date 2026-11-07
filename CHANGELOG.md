@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.6 (2026-11-07)
+
+Passes Moodle's strict JavaScript checks (no warnings)
+- Every promise chain now ends cleanly or reports its error, including saving a report, on-device marking and checking whether on-device AI is available. Before, a failed on-device check could leave an unhandled error.
+- Nested conditional expressions rewritten as plain if/else and small helpers, so the logic is easier to read and review.
+- Saving an edit and showing its "Saved" card no longer nests promises.
+- The seven largest functions (the experiment message handler, the Build and grading screens, answer marking, and three functions in the Fast Grade marking engine, kept identical to Fast Grade) carry a one-line reason why they stay as one function.
+- After saving an edit, the Preview and Publish buttons now come first on the "Saved" card and scroll into view. On Moodle 5.3 they could sit behind the sticky footer, where a click landed on the footer's "Next" link.
+
 ## 1.3.5 (2026-11-07)
 
 Passes Moodle's CSS checks

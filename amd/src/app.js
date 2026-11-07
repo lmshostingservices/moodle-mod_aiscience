@@ -28,6 +28,57 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         exptime: '', notes: [], results: null, selected: null, frameReady: false, previewVersion: 0, available: false};
     var root = null;
 
+    /**
+     * Tone for a score: 'bad' below the first limit, 'warn' below the second, otherwise 'ok'.
+     *
+     * @param {Number} v
+     * @param {Number} bad
+     * @param {Number} warn
+     * @returns {String}
+     */
+    var toneOf = function(v, bad, warn) {
+        if (v < bad) {
+            return 'bad';
+        }
+        return v < warn ? 'warn' : 'ok';
+    };
+    /**
+     * The value for the first key that matches, or the fallback.
+     *
+     * @param {String} key
+     * @param {Object} map
+     * @param {*} fallback
+     * @returns {*}
+     */
+    var pick = function(key, map, fallback) {
+        return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : fallback;
+    };
+    var creditsNote = function(balance) {
+        if (balance >= 0) {
+            return ' Credits left: ' + balance + '.';
+        }
+        return balance === -2 ? ' Credits: unlimited.' : '';
+    };
+    var creditsLeft = function(credits) {
+        if (credits >= 0) {
+            return credits;
+        }
+        return credits === -2 ? 'unlimited' : '–';
+    };
+    var rethinkHTML = function(answers) {
+        var why = String(answers.predrethink || '').trim();
+        if (why) {
+            return '<span>“' + esc(why) + '”</span>';
+        }
+        return answers._predmatch === 'no' ?
+            '<span class="aisx-muted">Hasn\'t explained what changed their mind yet.</span>' : '';
+    };
+    var versionTone = function(v) {
+        if (v.current) {
+            return 'ok';
+        }
+        return v.status === 'failed' ? 'bad' : '';
+    };
     var esc = function(s) {
         return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c) {
             return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
@@ -212,6 +263,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             f.lastChild.remove();
         }
     };
+    // eslint-disable-next-line complexity -- One handler for every message the sandboxed experiment can send; each case is short.
     var onMessage = function(e) {
         var f = frame();
         if (!f || e.source !== f.contentWindow) {
@@ -247,7 +299,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                     if (C.cansubmit && !S.isTeacherPreview) {
                         toast('Report sent to your teacher');
                     }
-                });
+                    return null;
+                }).catch(Notification.exception);
                 feed('Report submitted');
                 if (S.isTeacherPreview) {
                     toast('Preview report received. Students\' reports go to Results & grading.');
@@ -259,6 +312,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             case 'dictate':
                 dictate().then(function(text) {
                     f.contentWindow.postMessage({labkit: 1, reply: m.id, result: text}, '*');
+                    return null;
                 }).catch(function(err) {
                     f.contentWindow.postMessage({labkit: 1, reply: m.id, error: err.message}, '*');
                 });
@@ -285,7 +339,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                     innerHTML: '<h3>' + esc(C.role === 'teacher' ? 'No experiment yet' : 'Not published yet') + '</h3><p>' +
                         esc(C.role === 'teacher' ? 'Plan one in Build, or pick a ready-made experiment in the activity settings.' :
                             'Your teacher hasn\'t published this experiment yet.') + '</p>'}));
-                return;
+                return null;
             }
             S.versionid = r.versionid;
             f.srcdoc = r.html;
@@ -293,6 +347,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             if (t) {
                 t.textContent = r.title;
             }
+            return null;
         }).catch(Notification.exception);
     };
 
@@ -318,10 +373,16 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             '<p class="aisx-note" id="aisx-nbmsg" role="status"></p><ol class="aisx-nblist" id="aisx-nblist"></ol></aside>';
     };
     var noteItem = function(n) {
-        var kind = n.kind === 'text' ? 'Typed' : n.kind === 'audio' ? 'Voice' : 'Photo';
-        var body = n.kind === 'text' ? esc(n.content) : n.kind === 'audio' ?
-            '<audio controls preload="none" src="' + esc(n.url) + '"></audio>' + (n.content ? '<div class="aisx-tr">' +
-            esc(n.content) + '</div>' : '') : '<img src="' + esc(n.url) + '" alt="Photo added to the notebook" loading="lazy">';
+        var kind = pick(n.kind, {text: 'Typed', audio: 'Voice'}, 'Photo');
+        var body;
+        if (n.kind === 'text') {
+            body = esc(n.content);
+        } else if (n.kind === 'audio') {
+            body = '<audio controls preload="none" src="' + esc(n.url) + '"></audio>' + (n.content ? '<div class="aisx-tr">' +
+                esc(n.content) + '</div>' : '');
+        } else {
+            body = '<img src="' + esc(n.url) + '" alt="Photo added to the notebook" loading="lazy">';
+        }
         var when = n.timecreated ? new Date(n.timecreated * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : '';
         var del = n.id ? '<button type="button" class="aisx-nbdel" data-del="' + esc(String(n.id)) + '" aria-label="Delete this ' +
             kind.toLowerCase() + ' note">Delete</button>' : '';
@@ -348,6 +409,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 return n.id && !have[String(n.id)];
             }).concat(r.notes);
             renderNotes();
+            return null;
         }).catch(function() {
             return null;
         });
@@ -377,10 +439,12 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             return r.json();
         }).then(function(r) {
             if (!r.noteid) {
-                throw new Error(r.error || 'Upload failed');
+                var why = r.error ? String(r.error) : 'Upload failed';
+                throw new Error(why);
             }
             addLocalNote({id: r.noteid, kind: r.kind, url: r.url, content: transcript || ''});
             msg.textContent = r.kind === 'audio' ? 'Voice note saved.' : 'Photo saved.';
+            return null;
         }).catch(function(err) {
             msg.textContent = 'That didn\'t save: ' + err.message + '. Try again.';
         });
@@ -407,7 +471,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 text.focus();
                 return;
             }
-            var done = function(r) {
+            var afterAdd = function(r) {
                 addLocalNote({id: r && r.noteid ? r.noteid : 'local-' + Date.now(), kind: 'text', content: t});
                 text.value = '';
                 msg.textContent = 'Note saved.';
@@ -416,11 +480,11 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 }
             };
             if (!C.cansubmit || S.isTeacherPreview) {
-                done();
+                afterAdd();
                 return;
             }
             call('addnote', {cmid: C.cmid, versionid: S.versionid, content: t, stagelabel: S.stage, exptime: S.exptime})
-                .then(done).catch(Notification.exception);
+                .then(afterAdd).catch(Notification.exception);
         });
         // Delete a note: the first click asks, the second deletes.
         $('#aisx-nblist').addEventListener('click', function(e) {
@@ -468,6 +532,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 text.value = (text.value ? text.value.trimEnd() + ' ' : '') + t;
                 msg.textContent = 'Check it, then press Add note.';
                 text.focus();
+                return null;
             }).catch(function(err) {
                 msg.textContent = err.message;
             });
@@ -535,6 +600,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 btn.setAttribute('aria-pressed', 'true');
                 $('#aisx-nbrecl').textContent = 'Stop recording';
                 msg.textContent = 'Recording… press Stop when you\'re done.';
+                return null;
             }).catch(function() {
                 msg.textContent = 'Allow the microphone to record a voice note.';
             });
@@ -636,10 +702,16 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         var names = [['Plan', 'Lesson design you approve'], ['Build', 'AI writes the experiment'],
             ['Check', 'Automated safety & learning tests'], ['Publish', 'You approve, students see it']];
         return '<div class="aisx-pipe">' + order.map(function(o, i) {
-            var cls = i < at ? 'done' : i === at ? 'on' : '';
+            var cls = '';
+            if (i < at) {
+                cls = 'done';
+            } else if (i === at) {
+                cls = 'on';
+            }
             return '<div class="' + cls + '"><b>' + (i + 1) + ' ' + names[i][0] + '</b>' + names[i][1] + '</div>';
         }).join('') + '</div>';
     };
+    // eslint-disable-next-line complexity -- Renders every Build state (planning, building, checks, versions) in one place.
     var renderBuild = function() {
         var pane = $('#aisx-pane-build');
         var vs = S.versions;
@@ -695,8 +767,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 'experiment</h3><p>' + esc(C.question || 'Add a question in the brief first.') + '</p>' + (S.available ?
                 '<button type="button" class="aisx-btn aisx-sun aisx-lg" data-act="plan">Plan experiment' + cost('plan') +
                 '</button>' + (S.prices && S.prices.build ? '<p class="aisx-muted aisx-small">Building the experiment after ' +
-                'you approve the plan uses ' + S.prices.build + ' LMS Labs credits.' + (S.balance >= 0 ? ' Credits left: ' +
-                S.balance + '.' : (S.balance === -2 ? ' Credits: unlimited.' : '')) + '</p>' : '') :
+                'you approve the plan uses ' + S.prices.build + ' LMS Labs credits.' + creditsNote(S.balance) + '</p>' : '') :
                 '<p class="aisx-err">' + NOAI + ', or pick a ready-made experiment in ' +
                 '<a href="' + esc(C.editurl) + '">the activity settings</a>.</p>') + '</div>';
         }
@@ -704,8 +775,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             return '<tr><td>' + v.versionnum + '</td><td>' + esc(parse(v.plan, {}).title || '—') + '</td><td>' +
                 ({library: 'Library', edit: 'Your edit'}[v.source] || (v.instruction ? 'AI refine' : 'AI')) +
                 (v.instruction ? '<small class="aisx-vnote">' + esc(v.instruction) + '</small>' : '') +
-                    '</td><td><span class="aisx-tag ' + (v.current ? 'ok' :
-                v.status === 'failed' ? 'bad' : '') + '">' + esc(v.current ? 'Live' : STATUS[v.status] || v.status) +
+                    '</td><td><span class="aisx-tag ' + versionTone(v) + '">' +
+                        esc(v.current ? 'Live' : STATUS[v.status] || v.status) +
                 '</span></td><td>' + new Date(v.timemodified * 1000).toLocaleString([], {dateStyle: 'medium',
                 timeStyle: 'short'}) + '</td><td class="aisx-r">' + (v.status !== 'planning' && v.status !== 'planned' &&
                 v.status !== 'building' ? '<button type="button" class="aisx-btn aisx-sm" data-act="preview" data-id="' + v.id +
@@ -733,24 +804,25 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         }
     };
     var act = function(what, id, btn) {
-        var done = function() {
+        var afterAsk = function() {
             loadStatus();
         };
         if (btn) {
             btn.disabled = true;
         }
         if (what === 'plan') {
-            call('plan', {cmid: C.cmid}).then(done).catch(Notification.exception);
+            call('plan', {cmid: C.cmid}).then(afterAsk).catch(Notification.exception);
         } else if (what === 'build') {
             var title = $('#aisx-pltitle');
             var obj = $('#aisx-plobj');
             call('build', {cmid: C.cmid, versionid: id, title: title ? title.value : '', objectives: obj ? obj.value : ''})
-                .then(done).catch(Notification.exception);
+                .then(afterAsk).catch(Notification.exception);
         } else if (what === 'publish') {
             call('publish', {cmid: C.cmid, versionid: id}).then(function() {
                 toast('Published. Students see this version now.');
                 C.published = id;
-                done();
+                afterAsk();
+                return null;
             }).catch(Notification.exception);
         } else if (what === 'change') {
             var t = $('#aisx-chg').value.trim();
@@ -759,7 +831,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 $('#aisx-chg').focus();
                 return;
             }
-            call('change', {cmid: C.cmid, instruction: t}).then(done).catch(Notification.exception);
+            call('change', {cmid: C.cmid, instruction: t}).then(afterAsk).catch(Notification.exception);
         } else if (what === 'preview') {
             S.previewVersion = id;
             tab('preview');
@@ -787,6 +859,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             if (S.tab === 'build') {
                 renderBuild();
             }
+            return null;
         }).catch(Notification.exception);
     };
 
@@ -832,13 +905,13 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         var T = 16;
         var W = 476;
         var H = 220;
-        var Y = function(v) {
+        var yAt = function(v) {
             return T + H - v / max * H;
         };
         for (var i = 0; i <= 4; i++) {
             var v = max * i / 4;
-            svg('line', {x1: L, x2: L + W, y1: Y(v), y2: Y(v), 'class': 'aisx-grid'}, el);
-            svg('text', {x: L - 8, y: Y(v) + 4, 'text-anchor': 'end', 'class': 'aisx-svgmuted'}, el).textContent =
+            svg('line', {x1: L, x2: L + W, y1: yAt(v), y2: yAt(v), 'class': 'aisx-grid'}, el);
+            svg('text', {x: L - 8, y: yAt(v) + 4, 'text-anchor': 'end', 'class': 'aisx-svgmuted'}, el).textContent =
                 Math.round(v).toLocaleString();
         }
         var bw = W / keys.length;
@@ -852,16 +925,16 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             var mean = vals.reduce(function(a, b) {
                 return a + b;
             }, 0) / Math.max(1, vals.length);
-            svg('rect', {x: cx - bw * 0.28, y: Y(mean), width: bw * 0.56, height: T + H - Y(mean), rx: 6,
+            svg('rect', {x: cx - bw * 0.28, y: yAt(mean), width: bw * 0.56, height: T + H - yAt(mean), rx: 6,
                 'class': 'aisx-bar k' + (ki % 4)}, el);
             vals.forEach(function(x, j) {
-                svg('circle', {cx: cx + ((j % 7) - 3) * 6, cy: Y(x), r: 4.5, 'class': 'aisx-dot'}, el);
+                svg('circle', {cx: cx + ((j % 7) - 3) * 6, cy: yAt(x), r: 4.5, 'class': 'aisx-dot'}, el);
             });
             svg('text', {x: cx, y: T + H + 20, 'text-anchor': 'middle', 'class': 'aisx-svglabel'}, el).textContent =
                 k.charAt(0).toUpperCase() + k.slice(1);
             var top = Math.min.apply(null, vals.map(function(x) {
-                return Y(x);
-            }).concat([Y(mean)]));
+                return yAt(x);
+            }).concat([yAt(mean)]));
             svg('text', {x: cx, y: Math.max(12, top - 12), 'text-anchor': 'middle', 'class': 'aisx-svgval'}, el).textContent =
                 Math.round(mean).toLocaleString();
         });
@@ -1010,6 +1083,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                     toast('Out of LMS Labs credits. The comparison marks (no credits) stay for the rest.');
                 }
                 run();
+                return null;
             }).catch(function(e) {
                 Notification.exception(e);
                 renderResults();
@@ -1052,7 +1126,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'this computer (no credits)</button>' : '') + '<button type="button" class="aisx-btn aisx-primary aisx-sm" ' +
             'id="aisx-approve">Approve all suggested marks</button></div>' : '') +
             (r.aimark ? '<p class="aisx-note">AI marking: 1 LMS Labs credit per answer marked. Credits left: <b>' +
-            (r.credits >= 0 ? r.credits : (r.credits === -2 ? 'unlimited' : '–')) +
+            creditsLeft(r.credits) +
             '</b> · used by this activity: ' + r.creditsused + '.</p>' : '') + '<p class="aisx-note" id="aisx-amsg" ' +
             'aria-live="polite"></p></div>';
     };
@@ -1072,7 +1146,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 var items = unsureItems();
                 od.disabled = true;
                 var i = 0;
-                var next = function() {
+                var nextItem = function() {
                     if (i >= items.length) {
                         msg.textContent = 'Checked ' + items.length + ' answers on this computer.';
                         renderResults();
@@ -1089,11 +1163,12 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                     msg.textContent = 'Checking ' + i + ' of ' + items.length + '…';
                     Marker.onDeviceMark(q, Marker.parse(a.answers, {})[it.k], a, S.results.year).then(function(res) {
                         applyAI([{attemptid: it.attemptid, k: it.k, mark: res.mark, why: res.why}], 'ondevice');
+                        return null;
                     }).catch(function() {
                         return null;
-                    }).then(next);
+                    }).then(nextItem).catch(Notification.exception);
                 };
-                next();
+                nextItem();
             });
         }
         var aim = $('#aisx-aim');
@@ -1127,6 +1202,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                     toast('Graded ' + res.saved + (res.saved === 1 ? ' report' : ' reports') + '. Grades are in the gradebook.');
                     S.marks = {};
                     loadResults();
+                    return null;
                 }).catch(Notification.exception);
             });
         }
@@ -1186,15 +1262,24 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'what their data showed.</p>' : '') + '</section>' : '';
         var kpis = [['Submitted', submitted.length + ' / ' + rows.length], ['Graded', graded.length],
             ['Average grade', avg + (graded.length ? ' / ' + r.maxgrade : '')], ['Notebook entries', notes]];
+        var gradeCell = function(a, maxgrade) {
+            if (a.grade >= 0) {
+                return a.grade + ' / ' + maxgrade;
+            }
+            var mk = S.marks[a.attemptid];
+            if (!mk) {
+                return '—';
+            }
+            return '<span class="aisx-sugg">' + preview(mk.rubric, maxgrade) + (mk.unsure.length ? ' · ' +
+                mk.unsure.length + ' unsure' : '') + '</span>';
+        };
         var trs = rows.map(function(a, i) {
-            var st = a.status === 'graded' ? ['ok', 'Graded'] : a.status === 'submitted' ? ['warn', 'Needs grading'] :
-                ['', 'Working: ' + (a.stagename || 'stage ' + a.stage)];
+            var st = pick(a.status, {graded: ['ok', 'Graded'], submitted: ['warn', 'Needs grading']},
+                ['', 'Working: ' + (a.stagename || 'stage ' + a.stage)]);
             return '<tr tabindex="0" data-i="' + i + '" class="' + (S.selected === i ? 'sel' : '') + '"><td>' +
                 esc(a.fullname) + '</td><td>' + esc(a.prediction || '—') + '</td><td>' + (a.readings || '—') + '</td><td>' +
                 a.notes.length + '</td><td><span class="aisx-tag ' + st[0] + '">' + esc(st[1]) + '</span></td><td>' +
-                (a.grade >= 0 ? a.grade + ' / ' + r.maxgrade : S.marks[a.attemptid] ? '<span class="aisx-sugg">' +
-                preview(S.marks[a.attemptid].rubric, r.maxgrade) + (S.marks[a.attemptid].unsure.length ? ' · ' +
-                S.marks[a.attemptid].unsure.length + ' unsure' : '') + '</span>' : '—') + '</td></tr>';
+                gradeCell(a, r.maxgrade) + '</td></tr>';
         }).join('');
         pane.innerHTML = '<div class="aisx-kpis">' + kpis.map(function(k) {
             return '<div class="aisx-kpi"><div class="v">' + esc(k[1]) + '</div><div class="l">' + esc(k[0]) + '</div></div>';
@@ -1260,6 +1345,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         return '<p class="aisx-note">Before-you-send check: ' + f + (f === 1 ? ' tip' : ' tips') + ' at first' + (e === null ? '' :
             ', ' + e + ' left when sent' + (e < f ? ' (improved after feedback)' : '')) + '.</p>';
     };
+    // eslint-disable-next-line complexity -- Renders the grader: answers, marks, rubric and feedback for one report.
     var renderGrader = function() {
         var g = $('#aisx-grader');
         var r = S.results;
@@ -1283,10 +1369,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         }).join('') + '</tbody></table></div>' : '';
         var pc = answers._predmatch ? '<div class="aisx-pcline ' + (answers._predmatch === 'yes' ? 'ok' : 'no') + '"><b>' +
             (answers._predmatch === 'yes' ? 'Prediction supported' : 'Prediction not supported') + '</b> · predicted "' +
-            esc(a.prediction || '—') + '", their data ' + esc(answers._datashape || '') + '.' +
-                ((answers.predrethink || '').trim() ?
-            '<span>“' + esc(answers.predrethink.trim()) + '”</span>' : answers._predmatch === 'no' ?
-            '<span class="aisx-muted">Hasn\'t explained what changed their mind yet.</span>' : '') + '</div>' : '';
+            esc(a.prediction || '—') + '", their data ' + esc(answers._datashape || '') + '.' + rethinkHTML(answers) +
+            '</div>' : '';
         var BY = {engine: 'Comparison', ondevice: 'On-device AI', ai: 'AI · 1 credit', teacher: 'You'};
         var qHTML = mk && !mk.guide.basic ? '<h4 class="aisx-h4">Answers, marked one by one' + tip('Each answer has a ' +
             'suggested mark out of 4 with the reason. Click a number to change it. The Claim, Evidence and Reasoning scores ' +
@@ -1367,6 +1451,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                     a._rub = Object.assign({}, mk.rubric);
                     renderGrader();
                     refreshBar();
+                    return null;
                 }).catch(Notification.exception);
             });
         });
@@ -1388,6 +1473,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                         a.feedback = fb.value;
                         renderGrader();
                     });
+                    return null;
                 }).catch(function(e) {
                     $('#aisx-sug').innerHTML = '';
                     Notification.exception(e);
@@ -1398,7 +1484,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         if (save) {
             save.addEventListener('click', function() {
                 var fb = $('#aisx-fb').value;
-                var done = function() {
+                var afterGrade = function() {
                     toast('Grade saved to the gradebook');
                     delete S.marks[a.attemptid];
                     loadResults();
@@ -1406,10 +1492,10 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 if (mk && !mk.guide.basic) {
                     call('applymarks', {cmid: C.cmid, items: JSON.stringify([{attemptid: a.attemptid, claim: a._rub.claim || 0,
                         evidence: a._rub.evidence || 0, reasoning: a._rub.reasoning || 0, feedback: fb, marks: mk.q}])})
-                        .then(done).catch(Notification.exception);
+                        .then(afterGrade).catch(Notification.exception);
                 } else {
                     call('grade', {cmid: C.cmid, attemptid: a.attemptid, claim: a._rub.claim || 0, evidence: a._rub.evidence || 0,
-                        reasoning: a._rub.reasoning || 0, feedback: fb}).then(done).catch(Notification.exception);
+                        reasoning: a._rub.reasoning || 0, feedback: fb}).then(afterGrade).catch(Notification.exception);
                 }
             });
         }
@@ -1430,6 +1516,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             } else {
                 renderResults();
             }
+            return null;
         }).catch(Notification.exception);
     };
 
@@ -1440,7 +1527,10 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         }).sort(function(x, y) {
             return x - y;
         });
-        return n.length ? (n.length % 2 ? n[(n.length - 1) / 2] : (n[n.length / 2 - 1] + n[n.length / 2]) / 2) : null;
+        if (!n.length) {
+            return null;
+        }
+        return n.length % 2 ? n[(n.length - 1) / 2] : (n[n.length / 2 - 1] + n[n.length / 2]) / 2;
     };
     var bar = function(pct, tone) {
         return '<span class="aisx-meter ' + (tone || '') + '"><i style="width:' + Math.max(0, Math.min(100, pct || 0)) +
@@ -1512,10 +1602,10 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'not. "Check the marking" when strong students did worse than weaker ones. "Working well", "Fine" or "Easy" ' +
             'otherwise.') + '</th></tr></thead><tbody>' + items.map(function(it) {
                 var d = it.disc === null ? '—' : it.disc.toFixed(2);
-                var dtone = it.disc === null ? '' : it.disc < 0 ? 'bad' : it.disc < 0.2 ? 'warn' : 'ok';
+                var dtone = it.disc === null ? '' : toneOf(it.disc, 0, 0.2);
                 return '<tr><td><span class="aisx-qpart ' + it.part + '">' + esc(it.partLabel) + '</span> ' + esc(it.q) +
                     '</td><td class="aisx-nw">' + (it.facility === null ? '—' : it.facility + '% ' + bar(it.facility,
-                    it.facility < 30 ? 'bad' : it.facility < 50 ? 'warn' : 'ok')) +
+                    toneOf(it.facility, 30, 50))) +
                         '</td><td class="aisx-nw"><span class="aisx-tag ' +
                     dtone + '">' + d + '</span>' + (it.top !== null ? '<small class="aisx-muted"> strong ' + it.top + '% · ' +
                     'others ' + it.bottom + '%</small>' : '') + '</td><td><span class="aisx-verdict ' + it.tone + '">' +
@@ -1551,7 +1641,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             parts.map(function(x) {
                 return '<div><b>' + esc(Marker.PART[x.p]) + '</b><span class="aisx-big">' + x.avg.toFixed(1) +
                     '<small> / 4</small></span>' +
-                    bar(x.avg / 4 * 100, x.avg < 2 ? 'bad' : x.avg < 3 ? 'warn' : 'ok') + '<small class="aisx-muted">' +
+                    bar(x.avg / 4 * 100, toneOf(x.avg, 2, 3)) + '<small class="aisx-muted">' +
                     x.low.length + ' scored 0–1</small></div>';
             }).join('') + '</div>' + (rows.length ? '<p class="aisx-small"><b>Biggest gap: ' + esc(Marker.PART[weakest.p]) +
             '.</b> ' + esc(advice[weakest.p]) + '</p>' : '') + '</section>';
@@ -1646,7 +1736,12 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             var lines = [head].concat(all.map(function(a) {
                 var ans = parse(a.answers, {});
                 var m = S.marks[a.attemptid];
-                var rub = a.status === 'graded' ? parse(a.rubric, {}) : m ? m.rubric : {};
+                var rub = {};
+                if (a.status === 'graded') {
+                    rub = parse(a.rubric, {});
+                } else if (m) {
+                    rub = m.rubric;
+                }
                 return [a.fullname, a.status, a.stage, a.timesubmitted ? Math.round((a.timesubmitted - a.timecreated) / 60) : '',
                     a.prediction, ans._predmatch || '', String(ans.predrethink || '').trim() ? 'yes' : '', a.readings,
                     a.notes.length, ans._checkfirst || '', ans._checksend || '', rub.claim, rub.evidence, rub.reasoning,
@@ -1701,6 +1796,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 S.prices = parse(res[1].prices, {});
                 S.balance = res[1].credits;
                 renderRefine();
+                return null;
             }).catch(function(e) {
                 pane.innerHTML = '<div class="aisx-hero"><h3>Nothing to edit yet</h3><p>Build or pick an experiment first. ' +
                     'Once a version is ready you can reword it, change the sliders, ask AI to refine it, or edit the code.</p>' +
@@ -1817,10 +1913,14 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             return ['ready', 'published', 'retired', 'failed'].indexOf(v.status) > -1 || v.current;
         }).map(function(v) {
             return '<option value="' + v.id + '"' + (v.id === R.base ? ' selected' : '') + '>Version ' + v.versionnum + ' · ' +
-                esc(parse(v.plan, {}).title || C.name) + (v.current ? ' (live)' : v.status === 'failed' ? ' (checks failed)' :
-                v.status === 'ready' ? ' (draft)' : '') + '</option>';
+                esc(parse(v.plan, {}).title || C.name) +
+                (v.current ? ' (live)' : pick(v.status, {failed: ' (checks failed)', ready: ' (draft)'}, '')) + '</option>';
         }).join('');
         var modes = [['words', 'Words'], ['sliders', 'Sliders'], ['ai', 'Ask AI'], ['code', 'Code']];
+        var modeCount = function(mode, data) {
+            var n = pick(mode, {words: data.texts.length, sliders: data.numbers.length}, null);
+            return n === null ? '' : ' <span class="aisx-n">' + n + '</span>';
+        };
         pane.innerHTML = '<section class="aisx-card aisx-rf"><div class="aisx-rf-head"><div><p class="aisx-eyebrow">Edit &amp; ' +
             'refine</p><h3>' + esc(d.title) + '</h3><p class="aisx-muted aisx-small">Changes are saved as a new version. ' +
             'Students keep seeing the live version until you publish.</p></div><label class="aisx-rf-from">Start from' +
@@ -1830,8 +1930,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'aisx-small">This version: ' + esc(base.instruction) + '</p>' : '') +
             '<div class="aisx-seg" role="tablist" aria-label="How to edit">' + modes.map(function(m) {
                 return '<button type="button" role="tab" data-mode="' + m[0] + '" aria-selected="' + (R.mode === m[0]) + '">' +
-                    m[1] + (m[0] === 'words' ? ' <span class="aisx-n">' + d.texts.length + '</span>' : m[0] === 'sliders' ?
-                    ' <span class="aisx-n">' + d.numbers.length + '</span>' : '') + '</button>';
+                    m[1] + modeCount(m[0], d) + '</button>';
             }).join('') + '</div>' +
             '<div class="aisx-rf-bar" id="aisx-rf-bar"><span id="aisx-rf-count"></span><span class="aisx-grow"></span>' +
             '<button type="button" class="aisx-btn aisx-sm" id="aisx-rf-discard">Discard</button>' +
@@ -1867,8 +1966,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
     };
     var renderRefineBody = function() {
         var body = $('#aisx-rf-body');
-        body.innerHTML = R.mode === 'words' ? wordsHTML() : R.mode === 'sliders' ? slidersHTML() : R.mode === 'ai' ? aiHTML() :
-            codeHTML();
+        body.innerHTML = pick(R.mode, {words: wordsHTML, sliders: slidersHTML, ai: aiHTML}, codeHTML)();
         $('#aisx-rf-bar').hidden = R.mode === 'ai';
         updateBar();
         if (R.mode === 'words') {
@@ -1956,6 +2054,7 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 call('change', {cmid: C.cmid, instruction: t, basedon: R.base}).then(function() {
                     toast('Refining with AI. You\'ll review it in Build before students see it.');
                     tab('build');
+                    return null;
                 }).catch(function(err) {
                     e.target.disabled = false;
                     Notification.exception(err);
@@ -1977,6 +2076,55 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             });
         }
     };
+    var saveText = function(status, ok, published, draft, failing) {
+        if (status === 'published') {
+            return published;
+        }
+        return ok ? draft : failing;
+    };
+    /**
+     * Publish a version from the "saved" card.
+     *
+     * @param {Number} versionid
+     * @returns {Promise}
+     */
+    var publishVersion = function(versionid) {
+        return call('publish', {cmid: C.cmid, versionid: versionid}).then(function() {
+            toast('Published. Students see this version now.');
+            C.published = versionid;
+            return loadContent(versionid);
+        }).catch(Notification.exception);
+    };
+    /**
+     * Show what a save did, with Preview and Publish buttons.
+     *
+     * @param {Object} r the saveedit result
+     */
+    var showSaved = function(r) {
+        var ok = r.status !== 'failed';
+        $('#aisx-rf-result').innerHTML = '<div class="aisx-rf-done ' + (ok ? 'ok' : 'bad') + '"><h4>' +
+            saveText(r.status, ok, 'Live to students', 'Draft saved', 'Saved with failing checks') +
+            '</h4><p>' + esc(r.summary) + '</p><div class="aisx-row" id="aisx-rf-actions"><button type="button" ' +
+            'class="aisx-btn" data-pv="' + r.versionid + '">Preview as a student</button>' +
+            (ok && r.status !== 'published' && C.canpublish ? '<button type="button" ' +
+            'class="aisx-btn aisx-ok" data-pub="' + r.versionid + '">Publish</button>' : '') + '</div>' +
+            checksHTML(parse(r.checks, []).filter(function(c) {
+                return !ok || !c.pass;
+            })) + '</div>';
+        $('[data-pv]').addEventListener('click', function() {
+            S.previewVersion = r.versionid;
+            tab('preview');
+        });
+        var pub = $('[data-pub]');
+        if (pub) {
+            pub.addEventListener('click', function() {
+                pub.disabled = true;
+                publishVersion(r.versionid);
+            });
+        }
+        // Bring the buttons into view, clear of Moodle's sticky footer.
+        $('#aisx-rf-actions').scrollIntoView({behavior: 'smooth', block: 'center'});
+    };
     var saveRefine = function(publish, btn) {
         $$('#aisx-rf-bar button').forEach(function(b) {
             b.disabled = true;
@@ -1989,40 +2137,19 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             args.texts = JSON.stringify(R.texts);
             args.numbers = JSON.stringify(R.numbers);
         }
+        var saved = null;
         call('saveedit', args).then(function(r) {
+            saved = r;
             btn.classList.remove('aisx-busy');
-            var ok = r.status !== 'failed';
-            toast(r.status === 'published' ? 'Published. Students see the new version now.' : ok ?
-                'Saved as a draft. Preview it, then publish.' : 'Saved, but some checks fail.');
+            toast(saveText(r.status, r.status !== 'failed', 'Published. Students see the new version now.',
+                'Saved as a draft. Preview it, then publish.', 'Saved, but some checks fail.'));
             if (r.status === 'published') {
                 C.published = r.versionid;
             }
-            return loadContent(r.versionid).then(function() {
-                $('#aisx-rf-result').innerHTML = '<div class="aisx-rf-done ' + (ok ? 'ok' : 'bad') + '"><h4>' +
-                    (r.status === 'published' ? 'Live to students' : ok ? 'Draft saved' : 'Saved with failing checks') +
-                    '</h4><p>' + esc(r.summary) + '</p>' + checksHTML(parse(r.checks, []).filter(function(c) {
-                        return !ok || !c.pass;
-                    })) + '<div class="aisx-row"><button type="button" class="aisx-btn" data-pv="' + r.versionid +
-                    '">Preview as a student</button>' + (ok && r.status !== 'published' && C.canpublish ? '<button type="button" ' +
-                    'class="aisx-btn aisx-ok" data-pub="' + r.versionid + '">Publish</button>' : '') + '</div></div>';
-                var pv = $('[data-pv]');
-                pv.addEventListener('click', function() {
-                    S.previewVersion = r.versionid;
-                    tab('preview');
-                });
-                var pub = $('[data-pub]');
-                if (pub) {
-                    pub.addEventListener('click', function() {
-                        pub.disabled = true;
-                        call('publish', {cmid: C.cmid, versionid: r.versionid}).then(function() {
-                            toast('Published. Students see this version now.');
-                            C.published = r.versionid;
-                            loadContent(r.versionid);
-                        }).catch(Notification.exception);
-                    });
-                }
-                $('#aisx-rf-result').scrollIntoView({behavior: 'smooth', block: 'center'});
-            });
+            return loadContent(r.versionid);
+        }).then(function() {
+            showSaved(saved);
+            return null;
         }).catch(function(e) {
             btn.classList.remove('aisx-busy');
             updateBar();
@@ -2094,6 +2221,10 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             if (C.role === 'teacher') {
                 Marker.onDeviceReady().then(function(ok) {
                     S.ondevice = ok;
+                    return ok;
+                }).catch(function() {
+                    S.ondevice = false;
+                    return false;
                 });
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape' && document.activeElement && document.activeElement.classList.contains('aisx-i')) {
@@ -2109,7 +2240,13 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 var h = (location.hash || '').slice(1);
                 var allowed = C.cangenerate ? ['build', 'refine', 'preview', 'results', 'insights'] : ['preview', 'results',
                     'insights'];
-                tab(allowed.indexOf(h) > -1 ? h : C.cangenerate ? 'build' : C.canreports ? 'results' : 'preview');
+                var first = 'preview';
+                if (C.cangenerate) {
+                    first = 'build';
+                } else if (C.canreports) {
+                    first = 'results';
+                }
+                tab(allowed.indexOf(h) > -1 ? h : first);
             } else {
                 S.isTeacherPreview = false;
                 root.innerHTML = '<div class="aisx-student">' + playerHTML(false) + '</div>';

@@ -29,6 +29,24 @@ export const STOP = new Set(('a an the and or but if of to in on at by for with 
     'some any each which who whom what when where why how all both either neither').split(' '));
 
 /* Porter stemmer (Martin Porter, 1980; the algorithm is public domain). */
+
+/**
+ * Whether a cited year is an old version of a law that has a newer one.
+ *
+ * @param {Object} law
+ * @param {Number} year
+ * @returns {Boolean}
+ */
+const outdatedYear = (law, year) => {
+    if (law.name.startsWith('Aged Care')) {
+        return year === 1997;
+    }
+    if (law.name.startsWith('Standards')) {
+        return year === 2015;
+    }
+    return law.name.startsWith('Occupational');
+};
+
 const step2list = {ational: 'ate', tional: 'tion', enci: 'ence', anci: 'ance', izer: 'ize', bli: 'ble', alli: 'al',
     entli: 'ent', eli: 'e', ousli: 'ous', ization: 'ize', ation: 'ate', ator: 'ate', alism: 'al', iveness: 'ive',
     fulness: 'ful', ousness: 'ous', aliti: 'al', iviti: 'ive', biliti: 'ble', logi: 'log', isation: 'ize', iser: 'ize'};
@@ -48,6 +66,7 @@ const sV = new RegExp('^(' + C + ')?' + v);
  * @param {string} w
  * @returns {string}
  */
+// eslint-disable-next-line complexity -- Porter stemmer, copied unchanged from Fast Grade so both products mark identically.
 export const stem = w => {
     if (w.length < 3 || !/^[a-z]+$/.test(w)) {
         return w;
@@ -282,6 +301,7 @@ export const evaluate = (text, rules) => {
     let met = 0;
     let total = 0;
     const sentenceOf = (start, end) => sents.find(s => start >= s.start && end <= s.end + 1) || {start, end};
+    // eslint-disable-next-line complexity -- Rule evaluation, copied unchanged from Fast Grade so both products mark identically.
     (rules || []).forEach(rule => {
         const cfg = rule.config || {};
         const min = Math.max(1, cfg.min || 1);
@@ -621,6 +641,7 @@ const stepLabel = step => {
  * @param {string} text instructions, one block per line
  * @returns {Array} rules [{kind, config, from: 'instructions'}]
  */
+// eslint-disable-next-line complexity -- Rule parser, copied unchanged from Fast Grade so both products mark identically.
 export const fromInstructions = text => {
     const src = String(text || '');
     const rules = [];
@@ -908,7 +929,12 @@ export const coverage = (text, points, question = '') => {
                 best = {score, i};
             }
         });
-        const status = best.score >= 0.5 ? 'covered' : (best.score >= 0.3 ? 'partial' : 'missing');
+        let status = 'missing';
+        if (best.score >= 0.5) {
+            status = 'covered';
+        } else if (best.score >= 0.3) {
+            status = 'partial';
+        }
         const s = best.i >= 0 ? sents[best.i] : null;
         return {point: p, status, score: Math.round(best.score * 100) / 100, start: s ? s.start : -1, end: s ? s.end : -1};
     });
@@ -1004,8 +1030,7 @@ export const lawCheck = text => {
             } else if (!year) {
                 out.push({start: m.index, end: m.index + m[0].length, label: m[0], level: 'info',
                     message: `${law.name} ${law.years[law.years.length - 1]}`});
-            } else if (law.note && (law.name.startsWith('Aged Care') ? year === 1997 : (law.name.startsWith('Standards') ?
-                year === 2015 : law.name.startsWith('Occupational')))) {
+            } else if (law.note && outdatedYear(law, year)) {
                 out.push({start: m.index, end: m.index + m[0].length, label: m[0], level: 'warn', message: law.note});
             }
         }

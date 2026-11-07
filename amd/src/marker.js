@@ -106,9 +106,24 @@ define(['mod_aiscience/fgengine'], function(FG) {
         return {iv: '', dv: '', unit: '', idea: '', basic: true, questions: Object.keys(ans).filter(function(k) {
             return k.charAt(0) !== '_' && !/^(notice\d|challenge|prediction|find_|cp_)/.test(k);
         }).map(function(k) {
-            return {k: k, q: k, part: /claim/i.test(k) ? 'claim' : /^ev|evid/i.test(k) ? 'evidence' : /why|reason/i.test(k) ?
-                'reasoning' : 'other', model: '', ideas: [], wrong: [], numbers: 0, match: [], because: false};
+            return {k: k, q: k, part: partOfKey(k), model: '', ideas: [], wrong: [], numbers: 0, match: [], because: false};
         })};
+    };
+
+    /**
+     * Which CER part an answer key belongs to, from its name.
+     *
+     * @param {string} k
+     * @returns {string} claim | evidence | reasoning | other
+     */
+    var partOfKey = function(k) {
+        if (/claim/i.test(k)) {
+            return 'claim';
+        }
+        if (/^ev|evid/i.test(k)) {
+            return 'evidence';
+        }
+        return /why|reason/i.test(k) ? 'reasoning' : 'other';
     };
 
     /**
@@ -119,10 +134,11 @@ define(['mod_aiscience/fgengine'], function(FG) {
      * @param {Object} attempt
      * @returns {Object} {mark, max, why, conf, by, missing, wrong, nonums, noreason}
      */
+    // eslint-disable-next-line complexity -- Scores one answer on every criterion, kept together.
     var markAnswer = function(q, answer, attempt) {
         answer = String(answer || '').trim();
         var out = {mark: 0, max: 4, why: '', conf: 'high', by: 'engine', missing: [], wrong: '', nonums: false, noreason: false,
-            empty: !answer, short: false};
+            empty: !answer, 'short': false};
         if (!answer) {
             out.why = 'No answer.';
             return out;
@@ -158,8 +174,13 @@ define(['mod_aiscience/fgengine'], function(FG) {
         });
         if ((q.ideas || []).length) {
             comps.push([ideasFound / q.ideas.length, 0.5]);
-            notes.push(ideasFound === q.ideas.length ? 'Has the key ideas' : ideasFound ? 'Has some key ideas; missing "' +
-                out.missing.join('", "') + '"' : 'Missing the key ideas ("' + out.missing.join('", "') + '")');
+            if (ideasFound === q.ideas.length) {
+                notes.push('Has the key ideas');
+            } else if (ideasFound) {
+                notes.push('Has some key ideas; missing "' + out.missing.join('", "') + '"');
+            } else {
+                notes.push('Missing the key ideas ("' + out.missing.join('", "') + '")');
+            }
         }
         if (q.numbers) {
             var vals = dataValues(attempt, q.match);
@@ -174,8 +195,15 @@ define(['mod_aiscience/fgengine'], function(FG) {
             }).length;
             comps.push([Math.min(1, matched / q.numbers), (q.ideas || []).length ? 0.35 : 0.8]);
             out.nonums = matched === 0;
-            notes.push(matched >= q.numbers ? 'Uses their own numbers' : matched ? 'Uses ' + matched + ' of ' + q.numbers +
-                ' numbers needed' : numbersIn(answer).length ? 'Numbers don\'t match their data' : 'No numbers from their data');
+            if (matched >= q.numbers) {
+                notes.push('Uses their own numbers');
+            } else if (matched) {
+                notes.push('Uses ' + matched + ' of ' + q.numbers + ' numbers needed');
+            } else if (numbersIn(answer).length) {
+                notes.push('Numbers don\'t match their data');
+            } else {
+                notes.push('No numbers from their data');
+            }
         }
         if (q.because) {
             var why = BECAUSE.test(answer);
@@ -469,9 +497,14 @@ define(['mod_aiscience/fgengine'], function(FG) {
         if (!L) {
             return Promise.resolve(false);
         }
-        var check = L.availability ? L.availability() : L.capabilities ? L.capabilities().then(function(c) {
-            return c.available === 'readily' ? 'available' : c.available;
-        }) : Promise.resolve('no');
+        var check = Promise.resolve('no');
+        if (L.availability) {
+            check = L.availability();
+        } else if (L.capabilities) {
+            check = L.capabilities().then(function(c) {
+                return c.available === 'readily' ? 'available' : c.available;
+            });
+        }
         return Promise.resolve(check).then(function(a) {
             return a === 'available' || a === 'readily';
         }).catch(function() {
@@ -487,18 +520,20 @@ define(['mod_aiscience/fgengine'], function(FG) {
             '\nModel answer: ' + q.model + '\nKey ideas: ' + (ideas || 'none') + '\nThe student\'s results: ' + attempt.phases +
             '\nAnswer: ' + answer + '\nGive credit for correct ideas in the student\'s own words. Reply with only JSON: ' +
             '{"mark":0-4,"why":"one short sentence"}';
-        return L.create().then(function(session) {
-            return session.prompt(prompt).then(function(text) {
-                if (session.destroy) {
-                    session.destroy();
-                }
-                var m = String(text).match(/\{[\s\S]*\}/);
-                var d = m ? parse(m[0], null) : null;
-                if (!d || !isFinite(Number(d.mark))) {
-                    throw new Error('unreadable');
-                }
-                return {mark: Math.max(0, Math.min(4, Math.round(Number(d.mark)))), why: String(d.why || '').slice(0, 300)};
-            });
+        var session = null;
+        return L.create().then(function(s) {
+            session = s;
+            return session.prompt(prompt);
+        }).then(function(text) {
+            if (session.destroy) {
+                session.destroy();
+            }
+            var m = String(text).match(/\{[\s\S]*\}/);
+            var d = m ? parse(m[0], null) : null;
+            if (!d || !isFinite(Number(d.mark))) {
+                throw new Error('unreadable');
+            }
+            return {mark: Math.max(0, Math.min(4, Math.round(Number(d.mark)))), why: String(d.why || '').slice(0, 300)};
         });
     };
 
