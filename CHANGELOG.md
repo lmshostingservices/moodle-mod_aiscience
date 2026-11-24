@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.7 (2026-11-24)
+
+- Fixed: installing showed an "XMLDB has detected one CHAR NOT NULL column (questionkey) with '' (empty string) as DEFAULT" warning. The column no longer declares an empty default. Moodle was already creating it without one, so existing sites need no database change.
+- Added a test data generator, so the activity can be created by Moodle's automated tests and by demo and course-building tools. Tests cover creating, listing, deleting, backing up and restoring the activity.
+
 ## 1.3.6 (2026-11-07)
 
 Passes Moodle's strict JavaScript checks (no warnings)
