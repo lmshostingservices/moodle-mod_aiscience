@@ -16,6 +16,7 @@
 
 namespace mod_aiscience;
 
+#[\PHPUnit\Framework\Attributes\CoversNothing]
 /**
  * Tests for the mod_aiscience data generator.
  *
@@ -25,7 +26,6 @@ namespace mod_aiscience;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversNothing
  */
-#[\PHPUnit\Framework\Attributes\CoversNothing]
 final class generator_test extends \advanced_testcase {
     /**
      * The generator creates a working activity that Moodle can list, cache, back up and delete.
