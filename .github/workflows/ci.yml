@@ -196,10 +196,8 @@ jobs:
         # 5.2 raised the minimum to 8.3. The middle versions cost minutes
         # without telling you anything the boundaries do not.
         include:
-          - {php: '8.1', moodle-branch: 'MOODLE_404_STABLE', database: pgsql}
-          - {php: '8.1', moodle-branch: 'MOODLE_404_STABLE', database: mariadb}
-          - {php: '8.3', moodle-branch: 'MOODLE_404_STABLE', database: pgsql}
-          - {php: '8.3', moodle-branch: 'MOODLE_404_STABLE', database: mariadb}
+          # No Moodle 4.4 jobs: version.php requires 4.5 (2024100700), so the
+          # plugin cannot be installed on 4.4 once PHPUnit tests exist.
           - {php: '8.1', moodle-branch: 'MOODLE_405_STABLE', database: pgsql}
           - {php: '8.1', moodle-branch: 'MOODLE_405_STABLE', database: mariadb}
           - {php: '8.3', moodle-branch: 'MOODLE_405_STABLE', database: pgsql}
