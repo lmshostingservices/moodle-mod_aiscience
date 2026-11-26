@@ -26,10 +26,14 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading('mod_aiscience/intro', '', get_string('settingsintro', 'mod_aiscience')));
+    $ownai = '';
+    if (\mod_aiscience\byok::uses()) {
+        $ownai = \html_writer::div(s(get_string('byok_settings', 'mod_aiscience')), 'alert alert-success py-2');
+    }
     $settings->add(new admin_setting_heading(
         'mod_aiscience/lmslabsheading',
         get_string('lmslabs', 'mod_aiscience'),
-        \mod_aiscience\ai\lmslabs::status_html() . get_string('lmslabs_desc', 'mod_aiscience')
+        $ownai . \mod_aiscience\ai\lmslabs::status_html() . get_string('lmslabs_desc', 'mod_aiscience')
     ));
     if (!class_exists('\\local_aiconfig\\config')) {
         $settings->add(new admin_setting_configtext(

@@ -59,6 +59,8 @@ $config = [
     'voice' => (string)get_config('mod_aiscience', 'voice'),
     'voicerate' => (float)(get_config('mod_aiscience', 'voicerate') ?: 0.95),
     'published' => (int)$instance->currentversion,
+    // Bring your own AI: the site's own AI does the work, so the page shows no credit costs.
+    'ownai' => \mod_aiscience\byok::uses(),
 ];
 $PAGE->requires->js_call_amd('mod_aiscience/app', 'init', [$config]);
 

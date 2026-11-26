@@ -54,6 +54,9 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : fallback;
     };
     var creditsNote = function(balance) {
+        if (C && C.ownai) {
+            return ' Runs on your own AI, so no LMS Labs credits are used.';
+        }
         if (balance >= 0) {
             return ' Credits left: ' + balance + '.';
         }
@@ -767,7 +770,9 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
                 'experiment</h3><p>' + esc(C.question || 'Add a question in the brief first.') + '</p>' + (S.available ?
                 '<button type="button" class="aisx-btn aisx-sun aisx-lg" data-act="plan">Plan experiment' + cost('plan') +
                 '</button>' + (S.prices && S.prices.build ? '<p class="aisx-muted aisx-small">Building the experiment after ' +
-                'you approve the plan uses ' + S.prices.build + ' LMS Labs credits.' + creditsNote(S.balance) + '</p>' : '') :
+                'you approve the plan uses ' + S.prices.build + ' LMS Labs credits.' + creditsNote(S.balance) + '</p>' : '') +
+                (C.ownai ? '<p class="aisx-ownai"><i class="fa fa-microchip" aria-hidden="true"></i> Runs on your own AI, ' +
+                'so it uses no LMS Labs credits.</p>' : '') :
                 '<p class="aisx-err">' + NOAI + ', or pick a ready-made experiment in ' +
                 '<a href="' + esc(C.editurl) + '">the activity settings</a>.</p>') + '</div>';
         }
@@ -1040,7 +1045,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         if (btn.dataset.sure !== '1') {
             btn.dataset.sure = '1';
             btn.dataset.label = btn.textContent;
-            btn.textContent = 'Click again to use up to ' + items.length + (items.length === 1 ? ' credit' : ' credits');
+            btn.textContent = C.ownai ? 'Click again to mark ' + items.length + (items.length === 1 ? ' answer' : ' answers') +
+                ' with your own AI' : 'Click again to use up to ' + items.length + (items.length === 1 ? ' credit' : ' credits');
             return;
         }
         $$('.aisx-amark button').forEach(function(x) {
@@ -1062,8 +1068,8 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
         var total = batches.length;
         var run = function() {
             if (!batches.length) {
-                toast('AI marked ' + used + (used === 1 ? ' answer' : ' answers') + ' · ' + used + (used === 1 ? ' credit' :
-                    ' credits') + ' used.');
+                toast('AI marked ' + used + (used === 1 ? ' answer' : ' answers') + (C.ownai ? ' on your own AI.' : ' · ' + used +
+                    (used === 1 ? ' credit' : ' credits') + ' used.'));
                 renderResults();
                 return;
             }
@@ -1101,7 +1107,24 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             refreshMark(m);
         });
     };
+    // AI marking costs: none when the site's own AI does the work (Bring your own AI).
+    var aiCredits = function(n) {
+        return C.ownai ? '' : ' · ' + n + (n === 1 ? ' credit' : ' credits');
+    };
+    var aiOff = function(r) {
+        return r.credits === 0 && !C.ownai ? ' disabled' : '';
+    };
+    var aiMarkNote = function(r) {
+        if (C.ownai) {
+            return '<p class="aisx-note aisx-ownai"><i class="fa fa-microchip" aria-hidden="true"></i> AI marking runs on ' +
+                'your own AI, so it uses no LMS Labs credits.</p>';
+        }
+        return '<p class="aisx-note">AI marking: 1 LMS Labs credit per answer marked. Credits left: <b>' +
+            creditsLeft(r.credits) + '</b> · used by this activity: ' + r.creditsused + '.</p>';
+    };
     var amarkHTML = function() {
+        var AIMARKTIP = C.ownai ? 'It runs on your own AI, so it uses no LMS Labs credits.' : '1 credit per answer marked. ' +
+            'Blank answers and failed calls use no credits.';
         var r = S.results;
         var todo = ungraded();
         var unsure = unsureItems();
@@ -1115,19 +1138,17 @@ define(['core/ajax', 'core/notification', 'mod_aiscience/marker'], function(Ajax
             'could not be confident: for example the answer may be right in different words, or it mixes a right idea with a ' +
             'misconception. Read these yourself, or have them checked.') + '.' : 'No ungraded reports right now.') + '</p>' +
             (todo.length ? '<div class="aisx-row">' + (r.aimark && allItems().length ? '<button type="button" class="aisx-btn ' +
-            'aisx-sun aisx-sm" id="aisx-aimall"' + (r.credits === 0 ? ' disabled' : '') + '>Mark all ' + allItems().length +
-            ' answers with AI · ' + allItems().length + ' credits</button>' + tip('Recommended for science reports. The AI reads ' +
-            'each answer like a teacher would, so it gives credit for right ideas in the student\'s own words. It is also told ' +
-            'what the comparison found (whether the numbers match the student\'s own results, and any misconceptions). 1 credit ' +
-            'per answer marked. Blank answers and failed calls use no credits.') : '') + (r.aimark && unsure.length ? '<button ' +
-            'type="button" class="aisx-btn aisx-sm" id="aisx-aim"' + (r.credits === 0 ? ' disabled' : '') + '>Only the ' +
-            unsure.length + ' unsure · ' + unsure.length + (unsure.length === 1 ? ' credit' : ' credits') + '</button>' : '') +
+            'aisx-sun aisx-sm" id="aisx-aimall"' + aiOff(r) + '>Mark all ' + allItems().length + ' answers with AI' +
+            aiCredits(allItems().length) + '</button>' +
+            tip('Recommended for science reports. The AI reads each answer like a teacher would, so it gives credit for right ' +
+            'ideas in the student\'s own words. It is also told what the comparison found (whether the numbers match the ' +
+            'student\'s own results, and any misconceptions). ' + AIMARKTIP) : '') +
+            (r.aimark && unsure.length ? '<button type="button" class="aisx-btn aisx-sm" id="aisx-aim"' + aiOff(r) +
+            '>Only the ' + unsure.length + ' unsure' + aiCredits(unsure.length) + '</button>' : '') +
             (S.ondevice && unsure.length ? '<button type="button" class="aisx-btn aisx-sm" id="aisx-od">Check unsure answers on ' +
             'this computer (no credits)</button>' : '') + '<button type="button" class="aisx-btn aisx-primary aisx-sm" ' +
             'id="aisx-approve">Approve all suggested marks</button></div>' : '') +
-            (r.aimark ? '<p class="aisx-note">AI marking: 1 LMS Labs credit per answer marked. Credits left: <b>' +
-            creditsLeft(r.credits) +
-            '</b> · used by this activity: ' + r.creditsused + '.</p>' : '') + '<p class="aisx-note" id="aisx-amsg" ' +
+            (r.aimark ? aiMarkNote(r) : '') + '<p class="aisx-note" id="aisx-amsg" ' +
             'aria-live="polite"></p></div>';
     };
     var refreshBar = function() {

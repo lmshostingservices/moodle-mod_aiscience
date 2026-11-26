@@ -1869,3 +1869,24 @@ th .aisx-tipb {
     color: var(--ax-muted);
     margin: 4px 0 2px;
 }
+
+/* Bring your own AI: the work runs on the site's own AI. */
+.aisx .aisx-ownai {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 4px 12px;
+    border: 1px solid rgba(53, 122, 50, 0.28);
+    border-radius: 999px;
+    background: rgba(53, 122, 50, 0.08);
+    color: #2b632a;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+[data-bs-theme="dark"] .aisx .aisx-ownai {
+    border-color: rgba(93, 149, 91, 0.4);
+    background: rgba(93, 149, 91, 0.14);
+    color: #aecaad;
+}

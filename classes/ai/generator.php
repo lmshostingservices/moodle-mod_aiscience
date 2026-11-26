@@ -50,7 +50,7 @@ class generator {
      * @return bool
      */
     public static function available(?\context $context = null): bool {
-        if (self::provider() === 'mock') {
+        if (self::provider() === 'mock' || \mod_aiscience\byok::uses()) {
             return true;
         }
         return !empty(lmslabs::status()['connected']);
@@ -87,6 +87,13 @@ class generator {
                 $charged = array_intersect_key($charged, $marks);
             }
             lmslabs::$last = ['credits' => array_sum($charged), 'balance' => -1, 'charged' => $charged];
+            return $text;
+        }
+        if (\mod_aiscience\byok::uses()) {
+            // Bring your own AI: the site's own AI does the work, so nothing is charged.
+            lmslabs::$last = null;
+            $text = \mod_aiscience\byok::run($task, $prompt, $maxtokens, $items);
+            lmslabs::$last = ['credits' => 0, 'balance' => -1, 'charged' => []];
             return $text;
         }
         return lmslabs::run($task, $prompt, $jobid !== '' ? $jobid : "ctx$contextid-u$userid-" . time(), $maxtokens, $items);
@@ -285,7 +292,7 @@ class generator {
             $error = $status === 'failed' ? 'Some checks still fail after ' . $repairs . ' repair rounds.' : '';
             self::update($versionid, ['status' => $status, 'html' => $html, 'checks' => json_encode($results),
                 'repairs' => $repairs, 'error' => $error,
-                'model' => self::provider() === 'mock' ? 'mock' : 'lms-labs']);
+                'model' => self::provider() === 'mock' ? 'mock' : (\mod_aiscience\byok::uses() ? 'own-ai' : 'lms-labs')]);
         } catch (\Throwable $e) {
             self::update($versionid, ['status' => 'failed', 'error' => $e->getMessage()]);
         }
