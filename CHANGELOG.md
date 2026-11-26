@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0 (2026-11-26)
+
+Bring your own AI
+- With an LMS Labs Bring your own AI licence and Text set to Moodle AI or your own key in AI Grader Central Config, plans, builds, refines, repairs, AI marking and rubric suggestions run on the site's own AI, with no credits and no LMS Labs credentials.
+- The same instructions, token limits, temperature and answer checks as the LMS Labs service. The answer checks were compared with the service's code on 24,000 generated AI answers, with identical results.
+- The Build screen, the confirm dialogs, the marking buttons and the settings page say the work runs on the site's own AI instead of showing credit prices. Experiment versions built this way are labelled "own-ai".
+
 ## 1.3.7 (2026-11-24)
 
 - Fixed: installing showed an "XMLDB has detected one CHAR NOT NULL column (questionkey) with '' (empty string) as DEFAULT" warning. The column no longer declares an empty default. Moodle was already creating it without one, so existing sites need no database change.

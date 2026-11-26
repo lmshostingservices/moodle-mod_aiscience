@@ -488,7 +488,7 @@ class studio extends external_api {
                 'timemodified' => (int)$v->timemodified];
         }
         $prices = \mod_aiscience\ai\generator::provider() === 'mock' ? ['plan' => 1, 'build' => 10, 'refine' => 2, 'mark' => 1,
-            'suggest' => 1] : (\mod_aiscience\ai\lmslabs::status()['prices'] ?? []);
+            'suggest' => 1] : (\mod_aiscience\byok::uses() ? [] : (\mod_aiscience\ai\lmslabs::status()['prices'] ?? []));
         return ['available' => \mod_aiscience\ai\generator::available($context), 'versions' => $versions,
             'name' => format_string($instance->name), 'prices' => json_encode((object)$prices),
             'credits' => \mod_aiscience\local\credits::balance()];

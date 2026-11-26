@@ -8,6 +8,13 @@
 - PHP 8.1 or later (tested on 8.3)
 - For building your own experiments and AI marking: an LMS Labs account with credits. Add the LMS Labs Site ID and API key in the plugin settings (or install the shared LMS Labs AI settings plugin). Ready-made experiments and the built-in marking engine use no AI and no credits.
 - Credit prices: plan 1, build 10, refine 2, AI marking 1 per answer, rubric suggestion 1.
+- Or bring your own AI: with an LMS Labs Bring your own AI licence, set Text to Moodle AI or your own key in AI Grader Central Config (`local_aiconfig`) and every AI step runs on your site's own AI, with no credits.
+
+## Bring your own AI
+
+When Text is set to your own AI in AI Grader Central Config, plans, experiment builds, refines and repairs, AI marking and rubric suggestions run from your Moodle site straight to your AI provider. The plugin sends the same instructions, token limits and temperature as the LMS Labs service and checks the AI's answers the same way, so results match the credit route. Nothing is charged and no LMS Labs credentials are needed. The teacher screens say the work runs on your own AI instead of showing credit prices.
+
+The LMS Labs service picks a stronger model for builds and a faster one for marking; your own AI uses the model you chose for Text. Builds need a model with a large output limit (32,000 tokens).
 
 ## Install
 
